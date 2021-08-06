@@ -218,9 +218,10 @@ int tokenize(char *text, int size, Token **tokens) {
         //number literal
         int num_lit_size = read_num_literal(text, size - i);
         if (num_lit_size > 0) {
-            text += num_lit_size;
             i += num_lit_size;
             char *new_lit = calloc(num_lit_size + 1, sizeof(char));
+            strncpy(new_lit, text, num_lit_size);
+            text += num_lit_size;
             Token *new = new_token(num_literal, new_lit, num_lit_size);
             insert_token_list(tokens, new);
             continue;
@@ -229,9 +230,10 @@ int tokenize(char *text, int size, Token **tokens) {
         //identifier
         int ident_size = read_identifier(text, size - i);
         if (ident_size > 0) {
-            text += ident_size;
             i += ident_size;
             char *new_ident = calloc(ident_size + 1, sizeof(char));
+            strncpy(new_ident, text, ident_size);
+            text += ident_size;
             Token *new = new_token(identifier, new_ident, ident_size);
             insert_token_list(tokens, new);
             continue;
