@@ -18,7 +18,10 @@ all: setup build
 setup:
 	mkdir -p $(BIN)
 
-build: compiler
+build: compiler lexer
 
 compiler:
 	$(BUILDSTR) $(SRC)/main.c -o $(BIN)/compiler
+
+lexer:
+	$(BUILDSTR) $(SRC)/lexer.c -o $(BIN)/lexer
