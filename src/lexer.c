@@ -1,30 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "lexer.h"
 
 #define strl(str) str, sizeof(str) - 1
 #define strsize(str) sizeof(str) - 1
-
-/*
-//language could look something like this
-function abc {
-    x1 = 1 + 2
-    x2 = x1 + x2
-}
-
-abc()
-*/
-
-typedef enum {
-    function_keyword, identifier, num_literal, equ, add, sub, open_brace, close_brace, open_parenthesis, close_parenthesis,
-} Token_Type;
-
-typedef struct Token {
-    Token_Type type;
-    char *value;
-    int value_size;
-    struct Token *next;
-} Token;
 
 Token *new_token(Token_Type type, char *value, int value_size) {
     Token *token = malloc(sizeof(Token));
