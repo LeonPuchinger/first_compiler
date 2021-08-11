@@ -22,24 +22,6 @@ void free_token(Token *token) {
     free(token);
 }
 
-void insert_token_list(Token **root, Token *new) {
-    if (*root == NULL) {
-        *root = new;
-    }
-    else {
-        insert_token_list(&((*root)->next), new);
-    }
-}
-
-void free_token_list(Token *root) {
-    while (root->next != NULL) {
-        Token *next = root->next;
-        free_token(root);
-        root = next;
-    }
-    free_token(root);
-}
-
 int error(char *msg, char *text, int pos) {
     int line = 1;
     int line_pos = 1;
@@ -91,7 +73,36 @@ int read_identifier(char *text, int size) {
     return ident_size;
 }
 
-int tokenize(char *text, int size, Token **tokens) {
+Token_List *new_token_list() {
+    Token_List *new = malloc(sizeof(Token_List));
+    new->root = NULL;
+    return new;
+}
+
+void free_token_list(Token_List *list) {
+    Token *token = list->root;
+    while (token != NULL) {
+        Token *next = token->next;
+        free_token(token);
+        token = next;
+    }
+    free(list);
+}
+
+void token_list_add(Token_List *list, Token *new) {
+    if (list->root == NULL) {
+        list->root = new;
+    }
+    else {
+        Token *token = list->root;
+        while (token->next != NULL) {
+            token = token->next;
+        }
+        token->next = new;
+    }
+}
+
+int tokenize(char *text, int size, Token_List *tokens) {
     char *text_start = text;
     int i = 0;
     while (i < size) {
@@ -133,7 +144,7 @@ int tokenize(char *text, int size, Token **tokens) {
             text += strsize("function");
             i += strsize("function");
             Token *new = new_token(function_keyword, strl("function"));
-            insert_token_list(tokens, new);
+            token_list_add(tokens, new);
             continue;
         }
 
@@ -142,7 +153,7 @@ int tokenize(char *text, int size, Token **tokens) {
             text += 1;
             i += 1;
             Token *new = new_token(open_brace, strl("{"));
-            insert_token_list(tokens, new);
+            token_list_add(tokens, new);
             continue;
         }
 
@@ -150,7 +161,7 @@ int tokenize(char *text, int size, Token **tokens) {
             text += 1;
             i += 1;
             Token *new = new_token(close_brace, strl("}"));
-            insert_token_list(tokens, new);
+            token_list_add(tokens, new);
             continue;
         }
 
@@ -158,7 +169,7 @@ int tokenize(char *text, int size, Token **tokens) {
             text += 1;
             i += 1;
             Token *new = new_token(open_parenthesis, strl("("));
-            insert_token_list(tokens, new);
+            token_list_add(tokens, new);
             continue;
         }
 
@@ -166,7 +177,7 @@ int tokenize(char *text, int size, Token **tokens) {
             text += 1;
             i += 1;
             Token *new = new_token(close_parenthesis, strl(")"));
-            insert_token_list(tokens, new);
+            token_list_add(tokens, new);
             continue;
         }
 
@@ -175,7 +186,7 @@ int tokenize(char *text, int size, Token **tokens) {
             text += 1;
             i += 1;
             Token *new = new_token(equ, strl("="));
-            insert_token_list(tokens, new);
+            token_list_add(tokens, new);
             continue;
         }
 
@@ -183,7 +194,7 @@ int tokenize(char *text, int size, Token **tokens) {
             text += 1;
             i += 1;
             Token *new = new_token(add, strl("+"));
-            insert_token_list(tokens, new);
+            token_list_add(tokens, new);
             continue;
         }
 
@@ -191,7 +202,7 @@ int tokenize(char *text, int size, Token **tokens) {
             text += 1;
             i += 1;
             Token *new = new_token(sub, strl("-"));
-            insert_token_list(tokens, new);
+            token_list_add(tokens, new);
             continue;
         }
 
@@ -203,7 +214,7 @@ int tokenize(char *text, int size, Token **tokens) {
             strncpy(new_lit, text, num_lit_size);
             text += num_lit_size;
             Token *new = new_token(num_literal, new_lit, num_lit_size);
-            insert_token_list(tokens, new);
+            token_list_add(tokens, new);
             continue;
         }
 
@@ -215,7 +226,7 @@ int tokenize(char *text, int size, Token **tokens) {
             strncpy(new_ident, text, ident_size);
             text += ident_size;
             Token *new = new_token(identifier, new_ident, ident_size);
-            insert_token_list(tokens, new);
+            token_list_add(tokens, new);
             continue;
         }
 
@@ -243,9 +254,9 @@ int main(int argc, char **argv) {
     fread(text, file_size, sizeof(char), file);
     fclose(file);
 
-    Token *tokens = NULL;
-    int err = tokenize(text, file_size, &tokens);
-    free_token_list(tokens);
+    Token_List *list = new_token_list();
+    int err = tokenize(text, file_size, list);
+    free_token_list(list);
     free(text);
     return err;
 }

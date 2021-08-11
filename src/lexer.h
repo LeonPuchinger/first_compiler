@@ -16,6 +16,16 @@ Token *new_token(Token_Type type, char *value, int value_size);
 
 void free_token(Token *token);
 
-int tokenize(char *text, int size, Token **tokens);
+typedef struct {
+    Token *root;
+} Token_List;
+
+Token_List *new_token_list();
+
+void free_token_list(Token_List *list);
+
+void token_list_add(Token_List *list, Token *new);
+
+int tokenize(char *text, int size, Token_List *tokens);
 
 #endif
