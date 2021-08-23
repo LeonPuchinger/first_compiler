@@ -6,12 +6,13 @@
 #define strl(str) str, sizeof(str) - 1
 #define strsize(str) sizeof(str) - 1
 
+#define BACKLOG_MAX_SIZE 5
+
 Token *new_token(Token_Type type, char *value, int value_size) {
     Token *token = malloc(sizeof(Token));
     token->type = type;
     token->value = value;
     token->value_size = value_size;
-    token->next = NULL;
     return token;
 }
 
@@ -73,32 +74,80 @@ int read_identifier(char *text, int size) {
     return ident_size;
 }
 
+//Token List Node
+
+Token_List_Node *new_token_list_node(Token *token) {
+    Token_List_Node *new = malloc(sizeof(Token_List_Node));
+    new->next = NULL;
+    new->previous = NULL;
+    new->token = token;
+    return new;
+}
+
+void free_token_list_node(Token_List_Node *node) {
+    free(node);
+}
+
+//Token List
+
 Token_List *new_token_list() {
     Token_List *new = malloc(sizeof(Token_List));
     new->root = NULL;
+    new->current = NULL;
+    new->last = NULL;
     return new;
 }
 
 void free_token_list(Token_List *list) {
-    Token *token = list->root;
-    while (token != NULL) {
-        Token *next = token->next;
-        free_token(token);
-        token = next;
+    Token_List_Node *node = list->root;
+    while (node != NULL) {
+        Token_List_Node *next = node->next;
+        free_token(node->token);
+        free_token_list_node(node);
+        node = next;
     }
     free(list);
 }
 
 void token_list_add(Token_List *list, Token *new) {
+    Token_List_Node *new_node = new_token_list_node(new);
     if (list->root == NULL) {
-        list->root = new;
+        list->root = new_node;
+        list->current = new_node;
+        list->last = new_node;
     }
     else {
-        Token *token = list->root;
-        while (token->next != NULL) {
-            token = token->next;
+        if (list->last != NULL) {
+            new_node->previous = list->last;
+            list->last->next = new_node;
+            list->last = new_node;
         }
-        token->next = new;
+    }
+}
+
+Token *token_list_next(Token_List *list) {
+    if (list->root == NULL || list->current == NULL) {
+        return NULL;
+    }
+    Token *token = list->current->token;
+    list->current = list->current->next;
+    return token;
+}
+
+void token_list_rewind(Token_List *list, int distance) {
+    if (list->root != NULL && list->last != NULL) {
+        while (distance > 0) {
+            if (list->current == list->root || list->current->previous == NULL) {
+                return;
+            }
+            if (list->current == NULL) {
+                list->current = list->last;
+            }
+            else {
+                list->current = list->current->previous;
+            }
+            distance -= 1;
+        }
     }
 }
 
