@@ -34,7 +34,11 @@ void free_token_list(Token_List *list);
 
 void token_list_add(Token_List *list, Token *new);
 
+Token *token_list_current(Token_List *list);
+
 Token *token_list_next(Token_List *list);
+
+void token_list_forward(Token_List *list);
 
 void token_list_rewind(Token_List *list, int distance);
 

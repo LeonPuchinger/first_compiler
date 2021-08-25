@@ -31,12 +31,11 @@ void error(char *msg) {
 
 //summand = ident | num_literal
 PT_Node *summand(Token_List *tokens) {
-    Token *token = token_list_next(tokens);
+    Token *token = token_list_current(tokens);
     if (token->type == identifier || token->type == num_literal) {
         PT_Node *new = new_pt_node(token);
+        token_list_forward(tokens);
         return new;
     }
-    //TODO: maybe implement token_list_current for simple productions like this, only forward if actually needed
-    token_list_rewind(tokens, 1);
     return NULL;
 }

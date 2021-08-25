@@ -125,6 +125,11 @@ void token_list_add(Token_List *list, Token *new) {
     }
 }
 
+Token *token_list_current(Token_List *list) {
+    return list->current;
+}
+
+//return current and forward
 Token *token_list_next(Token_List *list) {
     if (list->root == NULL || list->current == NULL) {
         return NULL;
@@ -132,6 +137,13 @@ Token *token_list_next(Token_List *list) {
     Token *token = list->current->token;
     list->current = list->current->next;
     return token;
+}
+
+//just forward
+void token_list_forward(Token_List *list) {
+    if (list->root != NULL && list->current != NULL) {
+        list->current = list->current->next;
+    }
 }
 
 void token_list_rewind(Token_List *list, int distance) {
