@@ -79,3 +79,40 @@ PT_Node *expression(Token_List *tokens) {
     pt_node_add_child(new, s2);
     return new;
 }
+
+//call = identifier "()"
+PT_Node *call(Token_List *tokens) {
+    //identifier
+    Token *token = token_list_current(tokens);
+    if (token == NULL || token->type != identifier) {
+        return NULL;
+    }
+    PT_Node *id = new_pt_node(token);
+    token_list_forward(tokens);
+
+    //open parenthesis
+    token = token_list_current(tokens);
+    if (token == NULL || token->type != open_parenthesis) {
+        token_list_rewind(tokens, 1);
+        free_pt_node(id);
+        return NULL;
+    }
+    PT_Node *open = new_pt_node(token);
+    token_list_forward(tokens);
+
+    //close parenthesis
+    token = token_list_current(tokens);
+    if (token == NULL || token->type != close_parenthesis) {
+        token_list_rewind(tokens, 2);
+        free_pt_node(id);
+        free_pt_node(open);
+        return NULL;
+    }
+    PT_Node *close = new_pt_node(token);
+    PT_Node *new = new_pt_node(NULL);
+    pt_node_add_child(new, id);
+    pt_node_add_child(new, open);
+    pt_node_add_child(new, close);
+    token_list_forward(tokens);
+    return new;
+}
