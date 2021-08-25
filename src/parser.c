@@ -11,6 +11,10 @@ PT_Node *new_pt_node(Token *token) {
     return new;
 }
 
+void free_pt_node(PT_Node *node) {
+    free(node);
+}
+
 void pt_node_add_child(PT_Node *parent, PT_Node *new) {
     if (parent->children == NULL) {
         parent->children = new;
