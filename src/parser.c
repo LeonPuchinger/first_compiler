@@ -36,10 +36,46 @@ void error(char *msg) {
 //summand = ident | num_literal
 PT_Node *summand(Token_List *tokens) {
     Token *token = token_list_current(tokens);
+    if (token == NULL) return NULL;
     if (token->type == identifier || token->type == num_literal) {
         PT_Node *new = new_pt_node(token);
         token_list_forward(tokens);
         return new;
     }
     return NULL;
+}
+
+//expression = summand "+" summand | summand "-" summand | summand
+PT_Node *expression(Token_List *tokens) {
+    //all alternatives have first summand in common
+    PT_Node *s1 = summand(tokens);
+    if (s1 == NULL) return NULL;
+
+    PT_Node *new = new_pt_node(NULL); //TODO: add ability to add node kind/type (e.g. expr)
+    pt_node_add_child(new, s1);
+
+    //operands
+    Token *token = token_list_current(tokens);
+    PT_Node *op;
+    if (token == NULL) return new;
+    if (token->type == add || token->type == sub) {
+        op = new_pt_node(token);
+    }
+    else {
+        //no operand found, but single summand is still a valid expression
+        return new;
+    }
+    token_list_forward(tokens);
+
+    //second summand
+    PT_Node *s2 = summand(tokens);
+    if (s2 == NULL) {
+        //rewind already consumed operator and free its PT node
+        token_list_rewind(tokens, 1);
+        free_pt_node(op);
+        return new;
+    }
+    pt_node_add_child(new, op);
+    pt_node_add_child(new, s2);
+    return new;
 }
