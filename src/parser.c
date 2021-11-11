@@ -3,28 +3,28 @@
 #include "lexer.h"
 #include "parser.h"
 
-PT_Node *new_pt_node(Token *token) {
-    PT_Node *new = malloc(sizeof(PT_Node));
+AST_Node *new_ast_node(Token *token, AST_Node_Type type) {
+    AST_Node *new = malloc(sizeof(AST_Node));
+    new->lhs = NULL;
+    new->rhs = NULL;
     new->children = NULL;
     new->next = NULL;
-    new->token = token;
-    return new;
+    new->node_type = type;
 }
 
-void free_pt_node(PT_Node *node) {
+void free_ast_node(AST_Node *node) {
     free(node);
 }
 
-void pt_node_add_child(PT_Node *parent, PT_Node *new) {
+void ast_node_add_child(AST_Node *parent, AST_Node *new_child) {
     if (parent->children == NULL) {
-        parent->children = new;
-    }
-    else {
-        PT_Node *children = parent->children;
+        parent->children = new_child;
+    } else {
+        AST_Node *children = parent->children;
         while (children->next != NULL) {
             children = children->next;
         }
-        children->next = new;
+        children->next = new_child;
     }
 }
 
@@ -32,7 +32,7 @@ void error(char *msg) {
     printf("ERROR: %msg\n");
     exit(1);
 }
-
+/*
 //summand = ident | num_literal
 PT_Node *summand(Token_List *tokens) {
     Token *token = token_list_current(tokens);
@@ -115,4 +115,5 @@ PT_Node *call(Token_List *tokens) {
     pt_node_add_child(new, close);
     token_list_forward(tokens);
     return new;
+} */
 }
