@@ -49,42 +49,45 @@ AST_Node *summand(Token_List *tokens) {
     token_list_forward(tokens);
     return new;
 }
-/*
+
 //expression = summand "+" summand | summand "-" summand | summand
-PT_Node *expression(Token_List *tokens) {
+AST_Node *expression(Token_List *tokens) {
     //all alternatives have first summand in common
-    PT_Node *s1 = summand(tokens);
+    AST_Node *s1 = summand(tokens);
     if (s1 == NULL) return NULL;
 
-    PT_Node *new = new_pt_node(NULL); //TODO: add ability to add node kind/type (e.g. expr)
-    pt_node_add_child(new, s1);
-
-    //operands
+    //operand
     Token *token = token_list_current(tokens);
-    PT_Node *op;
-    if (token == NULL) return new;
-    if (token->type == add || token->type == sub) {
-        op = new_pt_node(token);
+    AST_Node *op;
+    if (token == NULL) {
+        return s1;
+    }
+    if (token->type == add) {
+        op = new_ast_node(token, ND_ADD);
+    }
+    else if (token->type == sub) {
+        op = new_ast_node(token, ND_SUB);
     }
     else {
         //no operand found, but single summand is still a valid expression
-        return new;
+        return s1;
     }
+
     token_list_forward(tokens);
 
     //second summand
-    PT_Node *s2 = summand(tokens);
+    AST_Node *s2 = summand(tokens);
     if (s2 == NULL) {
-        //rewind already consumed operator and free its PT node
+        //rewind already consumed operator and free its AST node
         token_list_rewind(tokens, 1);
-        free_pt_node(op);
-        return new;
+        free_ast_node(op);
+        return s1;
     }
-    pt_node_add_child(new, op);
-    pt_node_add_child(new, s2);
-    return new;
+    op->lhs = s1;
+    op->rhs = s2;
+    return op;
 }
-
+/*
 //call = identifier "()"
 PT_Node *call(Token_List *tokens) {
     //identifier
