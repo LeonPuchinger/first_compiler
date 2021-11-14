@@ -32,19 +32,24 @@ void error(char *msg) {
     printf("ERROR: %msg\n");
     exit(1);
 }
-/*
+
 //summand = ident | num_literal
-PT_Node *summand(Token_List *tokens) {
+AST_Node *summand(Token_List *tokens) {
     Token *token = token_list_current(tokens);
     if (token == NULL) return NULL;
-    if (token->type == identifier || token->type == num_literal) {
-        PT_Node *new = new_pt_node(token);
-        token_list_forward(tokens);
-        return new;
+    AST_Node *new;
+    if (token->type == identifier) {
+        new = new_ast_node(token, ND_VAR);
     }
-    return NULL;
+    else if (token->type == num_literal) {
+        new = new_ast_node(token, ND_INT);
+    } else {
+        return NULL;
+    }
+    token_list_forward(tokens);
+    return new;
 }
-
+/*
 //expression = summand "+" summand | summand "-" summand | summand
 PT_Node *expression(Token_List *tokens) {
     //all alternatives have first summand in common
