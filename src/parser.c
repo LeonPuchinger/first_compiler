@@ -19,7 +19,8 @@ void free_ast_node(AST_Node *node) {
 void ast_node_add_child(AST_Node *parent, AST_Node *new_child) {
     if (parent->children == NULL) {
         parent->children = new_child;
-    } else {
+    }
+    else {
         AST_Node *children = parent->children;
         while (children->next != NULL) {
             children = children->next;
@@ -37,17 +38,18 @@ void error(char *msg) {
 AST_Node *summand(Token_List *tokens) {
     Token *token = token_list_current(tokens);
     if (token == NULL) return NULL;
-    AST_Node *new;
+    AST_Node *summand;
     if (token->type == identifier) {
-        new = new_ast_node(token, ND_VAR);
+        summand = new_ast_node(token, ND_VAR);
     }
     else if (token->type == num_literal) {
-        new = new_ast_node(token, ND_INT);
-    } else {
+        summand = new_ast_node(token, ND_INT);
+    }
+    else {
         return NULL;
     }
     token_list_forward(tokens);
-    return new;
+    return summand;
 }
 
 //expression = summand "+" summand | summand "-" summand | summand
