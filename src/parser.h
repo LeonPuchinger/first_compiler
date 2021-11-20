@@ -13,12 +13,12 @@ typedef struct AST_Node {
 
     //binary AST node
     //used for: assignment, addition, subtraction
-    AST_Node *lhs, *rhs;
+    struct AST_Node *lhs, *rhs;
 
     //n-ary AST node
     //used for: AST root, function definition
     //children: when the node itself has children, next: when the node is part of a list of children
-    AST_Node *children, *next;
+    struct AST_Node *children, *next;
 
     //no children needed for: function call, integer, variable
 } AST_Node;
