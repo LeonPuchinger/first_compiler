@@ -10,6 +10,7 @@ AST_Node *new_ast_node(Token *token, AST_Node_Type type) {
     new->children = NULL;
     new->next = NULL;
     new->node_type = type;
+    return new;
 }
 
 void free_ast_node(AST_Node *node) {
