@@ -17,7 +17,7 @@ Token *new_token(Token_Type type, char *value, int value_size) {
 }
 
 void free_token(Token *token) {
-    if (token->type == identifier || token->type == num_literal) {
+    if (token->type == TK_IDENT || token->type == TK_NUM_LITERAL) {
         free(token->value);
     }
     free(token);
@@ -204,7 +204,7 @@ int tokenize(char *text, int size, Token_List *tokens) {
         if (cmp(text, strl("function"))) {
             text += strsize("function");
             i += strsize("function");
-            Token *new = new_token(function_keyword, strl("function"));
+            Token *new = new_token(TK_FUNC_KW, strl("function"));
             token_list_add(tokens, new);
             continue;
         }
@@ -213,7 +213,7 @@ int tokenize(char *text, int size, Token_List *tokens) {
         if (cmp(text, strl("{"))) {
             text += 1;
             i += 1;
-            Token *new = new_token(open_brace, strl("{"));
+            Token *new = new_token(TK_OPEN_BRACE, strl("{"));
             token_list_add(tokens, new);
             continue;
         }
@@ -221,7 +221,7 @@ int tokenize(char *text, int size, Token_List *tokens) {
         if (cmp(text, strl("}"))) {
             text += 1;
             i += 1;
-            Token *new = new_token(close_brace, strl("}"));
+            Token *new = new_token(TK_CLOSE_BRACE, strl("}"));
             token_list_add(tokens, new);
             continue;
         }
@@ -229,7 +229,7 @@ int tokenize(char *text, int size, Token_List *tokens) {
         if (cmp(text, strl("("))) {
             text += 1;
             i += 1;
-            Token *new = new_token(open_parenthesis, strl("("));
+            Token *new = new_token(TK_OPEN_PAREN, strl("("));
             token_list_add(tokens, new);
             continue;
         }
@@ -237,7 +237,7 @@ int tokenize(char *text, int size, Token_List *tokens) {
         if (cmp(text, strl(")"))) {
             text += 1;
             i += 1;
-            Token *new = new_token(close_parenthesis, strl(")"));
+            Token *new = new_token(TK_CLOSE_PAREN, strl(")"));
             token_list_add(tokens, new);
             continue;
         }
@@ -246,7 +246,7 @@ int tokenize(char *text, int size, Token_List *tokens) {
         if (cmp(text, strl("="))) {
             text += 1;
             i += 1;
-            Token *new = new_token(equ, strl("="));
+            Token *new = new_token(TK_EQU, strl("="));
             token_list_add(tokens, new);
             continue;
         }
@@ -254,7 +254,7 @@ int tokenize(char *text, int size, Token_List *tokens) {
         if (cmp(text, strl("+"))) {
             text += 1;
             i += 1;
-            Token *new = new_token(add, strl("+"));
+            Token *new = new_token(TK_ADD, strl("+"));
             token_list_add(tokens, new);
             continue;
         }
@@ -262,7 +262,7 @@ int tokenize(char *text, int size, Token_List *tokens) {
         if (cmp(text, strl("-"))) {
             text += 1;
             i += 1;
-            Token *new = new_token(sub, strl("-"));
+            Token *new = new_token(TK_SUB, strl("-"));
             token_list_add(tokens, new);
             continue;
         }
@@ -274,7 +274,7 @@ int tokenize(char *text, int size, Token_List *tokens) {
             char *new_lit = calloc(num_lit_size + 1, sizeof(char));
             strncpy(new_lit, text, num_lit_size);
             text += num_lit_size;
-            Token *new = new_token(num_literal, new_lit, num_lit_size);
+            Token *new = new_token(TK_NUM_LITERAL, new_lit, num_lit_size);
             token_list_add(tokens, new);
             continue;
         }
@@ -286,7 +286,7 @@ int tokenize(char *text, int size, Token_List *tokens) {
             char *new_ident = calloc(ident_size + 1, sizeof(char));
             strncpy(new_ident, text, ident_size);
             text += ident_size;
-            Token *new = new_token(identifier, new_ident, ident_size);
+            Token *new = new_token(TK_IDENT, new_ident, ident_size);
             token_list_add(tokens, new);
             continue;
         }

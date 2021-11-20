@@ -2,7 +2,7 @@
 #define LEXER_H
 
 typedef enum {
-    function_keyword, identifier, num_literal, equ, add, sub, open_brace, close_brace, open_parenthesis, close_parenthesis,
+    TK_FUNC_KW, TK_IDENT, TK_NUM_LITERAL, TK_EQU, TK_ADD, TK_SUB, TK_OPEN_BRACE, TK_CLOSE_BRACE, TK_OPEN_PAREN, TK_CLOSE_PAREN,
 } Token_Type;
 
 typedef struct Token {

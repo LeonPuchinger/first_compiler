@@ -39,10 +39,10 @@ AST_Node *summand(Token_List *tokens) {
     Token *token = token_list_current(tokens);
     if (token == NULL) return NULL;
     AST_Node *summand;
-    if (token->type == identifier) {
+    if (token->type == TK_IDENT) {
         summand = new_ast_node(token, ND_VAR);
     }
-    else if (token->type == num_literal) {
+    else if (token->type == TK_NUM_LITERAL) {
         summand = new_ast_node(token, ND_INT);
     }
     else {
@@ -64,10 +64,10 @@ AST_Node *expression(Token_List *tokens) {
     if (token == NULL) {
         return s1;
     }
-    if (token->type == add) {
+    if (token->type == TK_ADD) {
         op = new_ast_node(token, ND_ADD);
     }
-    else if (token->type == sub) {
+    else if (token->type == TK_SUB) {
         op = new_ast_node(token, ND_SUB);
     }
     else {
@@ -94,7 +94,7 @@ AST_Node *expression(Token_List *tokens) {
 AST_Node *call(Token_List *tokens) {
     //identifier
     Token *id_token = token_list_current(tokens);
-    if (id_token == NULL || id_token->type != identifier) {
+    if (id_token == NULL || id_token->type != TK_IDENT) {
         return NULL;
     }
     token_list_forward(tokens);
@@ -102,7 +102,7 @@ AST_Node *call(Token_List *tokens) {
     Token *token;
     //open parenthesis
     token = token_list_current(tokens);
-    if (token == NULL || token->type != open_parenthesis) {
+    if (token == NULL || token->type != TK_OPEN_PAREN) {
         token_list_rewind(tokens, 1);
         return NULL;
     }
@@ -110,7 +110,7 @@ AST_Node *call(Token_List *tokens) {
 
     //close parenthesis
     token = token_list_current(tokens);
-    if (token == NULL || token->type != close_parenthesis) {
+    if (token == NULL || token->type != TK_CLOSE_PAREN) {
         token_list_rewind(tokens, 2);
         return NULL;
     }
