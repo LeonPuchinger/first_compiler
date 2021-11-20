@@ -119,3 +119,34 @@ AST_Node *call(Token_List *tokens) {
 
     return new_ast_node(id_token, ND_FUNCTION_CALL);
 }
+
+//assignment = identifier "=" expression
+AST_Node *assignment(Token_List *tokens) {
+    //identifier
+    Token *id_token = token_list_current(tokens);
+    if (id_token == NULL || id_token->type != TK_IDENT) {
+        return NULL;
+    }
+    token_list_forward(tokens);
+
+    //equal sign
+    Token *equ_token = token_list_current(tokens);
+    if (equ_token == NULL || equ_token->type != TK_EQU) {
+        token_list_rewind(tokens, 1);
+        return NULL;
+    }
+    token_list_forward(tokens);
+
+    //expression
+    AST_Node *expr = expression(tokens);
+    if (expr == NULL) {
+        token_list_rewind(tokens, 2);
+        return NULL;
+    }
+
+    AST_Node *var = new_ast_node(id_token, ND_VAR);
+    AST_Node *assign = new_ast_node(equ_token, ND_ASSIGN);
+    assign->lhs = var;
+    assign->rhs = expr;
+    return assign;
+}
