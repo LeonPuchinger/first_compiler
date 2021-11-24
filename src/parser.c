@@ -17,6 +17,14 @@ void free_ast_node(AST_Node *node) {
     free(node);
 }
 
+void free_ast_node_list(AST_Node *node) {
+    while (node != NULL) {
+        AST_Node *next = node->next;
+        free_ast_node(node);
+        node = next;
+    }
+}
+
 void ast_node_add_child(AST_Node *parent, AST_Node *new_child) {
     if (parent->children == NULL) {
         parent->children = new_child;
@@ -161,6 +169,7 @@ AST_Node *function(Token_List *tokens) {
     if (token == NULL || token->type != TK_FUNC_KW) {
         return NULL;
     }
+    Token_List_Node *token_reset = tokens->current; //return to this token if production can't be matched
     token_list_forward(tokens);
 
     //identifier
@@ -194,7 +203,8 @@ AST_Node *function(Token_List *tokens) {
     //close brace
     token = token_list_current(tokens);
     if (token == NULL || token->type != TK_CLOSE_BRACE) {
-        token_list_rewind(tokens, 3); //TODO include statements in rewind, free statements
+        tokens->current = token_reset; //cannot rewind a known distance because statement count is unknown at compile time
+        free_ast_node_list(statements);
         return NULL;
     }
 
