@@ -150,3 +150,55 @@ AST_Node *assignment(Token_List *tokens) {
     assign->rhs = expr;
     return assign;
 }
+
+AST_Node *function(Token_List *tokens);
+AST_Node *statement(Token_List *tokens);
+
+//function = "function" identifier "{" { statement } "}"
+AST_Node *function(Token_List *tokens) {
+    //function keyword
+    Token *token = token_list_current(tokens);
+    if (token == NULL || token->type != TK_FUNC_KW) {
+        return NULL;
+    }
+    token_list_forward(tokens);
+
+    //identifier
+    Token *id_token = token_list_current(tokens);
+    if (id_token == NULL || id_token->type != TK_IDENT) {
+        token_list_rewind(tokens, 1);
+        return NULL;
+    }
+    token_list_forward(tokens);
+
+    //open brace
+    token = token_list_current(tokens);
+    if (token == NULL || token->type != TK_OPEN_BRACE) {
+        token_list_rewind(tokens, 2);
+        return NULL;
+    }
+    token_list_forward(tokens);
+
+    //statements
+    AST_Node *statements, *current_statement, *new_statement;
+    while ((new_statement = statement(tokens)) != NULL) {
+        if (statements == NULL) {
+            statements = new_statement;
+            current_statement = new_statement;
+        }
+        else {
+            current_statement->next = new_statement;
+        }
+    }
+
+    //close brace
+    token = token_list_current(tokens);
+    if (token == NULL || token->type != TK_CLOSE_BRACE) {
+        token_list_rewind(tokens, 3); //TODO include statements in rewind, free statements
+        return NULL;
+    }
+
+    AST_Node *function = new_ast_node(id_token, ND_FUNCTION_CALL);
+    function->children = statements;
+    return function;
+}
