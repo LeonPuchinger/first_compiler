@@ -159,7 +159,6 @@ AST_Node *assignment(Token_List *tokens) {
     return assign;
 }
 
-AST_Node *function(Token_List *tokens);
 AST_Node *statement(Token_List *tokens);
 
 //function = "function" identifier "{" { statement } "}"
@@ -211,4 +210,38 @@ AST_Node *function(Token_List *tokens) {
     AST_Node *function = new_ast_node(id_token, ND_FUNCTION_CALL);
     function->children = statements;
     return function;
+}
+
+//statement = assignment | call | function
+AST_Node *statement(Token_List *tokens) {
+    AST_Node *node = assignment(tokens);
+    if (node != NULL) {
+        return node;
+    }
+
+    node = call(tokens);
+    if (node != NULL) {
+        return node;
+    }
+
+    return function(tokens);
+}
+
+//S = { statement }
+AST_Node *parse(Token_List *tokens) {
+    //statements
+    AST_Node *statements, *current_statement, *new_statement;
+    while ((new_statement = statement(tokens)) != NULL) {
+        if (statements == NULL) {
+            statements = new_statement;
+            current_statement = new_statement;
+        }
+        else {
+            current_statement->next = new_statement;
+        }
+    }
+
+    AST_Node *root = new_ast_node(NULL, ND_ROOT);
+    root->children = statements;
+    return root;
 }
