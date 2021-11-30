@@ -29,4 +29,6 @@ void free_ast_node(AST_Node *node);
 
 void ast_node_add_child(AST_Node *parent, AST_Node *new_child);
 
+AST_Node *parse(Token_List *tokens);
+
 #endif

@@ -10,6 +10,7 @@ AST_Node *new_ast_node(Token *token, AST_Node_Type type) {
     new->children = NULL;
     new->next = NULL;
     new->node_type = type;
+    new->token = token;
     return new;
 }
 
@@ -28,8 +29,7 @@ void free_ast_node_list(AST_Node *node) {
 void ast_node_add_child(AST_Node *parent, AST_Node *new_child) {
     if (parent->children == NULL) {
         parent->children = new_child;
-    }
-    else {
+    } else {
         AST_Node *children = parent->children;
         while (children->next != NULL) {
             children = children->next;
@@ -38,10 +38,10 @@ void ast_node_add_child(AST_Node *parent, AST_Node *new_child) {
     }
 }
 
-void error(char *msg) {
+/* void error(char *msg) {
     printf("ERROR: %msg\n");
     exit(1);
-}
+} */
 
 //summand = ident | num_literal
 AST_Node *summand(Token_List *tokens) {
@@ -50,11 +50,9 @@ AST_Node *summand(Token_List *tokens) {
     AST_Node *summand;
     if (token->type == TK_IDENT) {
         summand = new_ast_node(token, ND_VAR);
-    }
-    else if (token->type == TK_NUM_LITERAL) {
+    } else if (token->type == TK_NUM_LITERAL) {
         summand = new_ast_node(token, ND_INT);
-    }
-    else {
+    } else {
         return NULL;
     }
     token_list_forward(tokens);
@@ -75,11 +73,9 @@ AST_Node *expression(Token_List *tokens) {
     }
     if (token->type == TK_ADD) {
         op = new_ast_node(token, ND_ADD);
-    }
-    else if (token->type == TK_SUB) {
+    } else if (token->type == TK_SUB) {
         op = new_ast_node(token, ND_SUB);
-    }
-    else {
+    } else {
         //no operand found, but single summand is still a valid expression
         return s1;
     }
@@ -188,14 +184,14 @@ AST_Node *function(Token_List *tokens) {
     token_list_forward(tokens);
 
     //statements
-    AST_Node *statements, *current_statement, *new_statement;
+    AST_Node *statements = NULL, *current_statement = NULL, *new_statement = NULL;
     while ((new_statement = statement(tokens)) != NULL) {
         if (statements == NULL) {
             statements = new_statement;
             current_statement = new_statement;
-        }
-        else {
+        } else {
             current_statement->next = new_statement;
+            current_statement = new_statement;
         }
     }
 
@@ -206,8 +202,9 @@ AST_Node *function(Token_List *tokens) {
         free_ast_node_list(statements);
         return NULL;
     }
+    token_list_forward(tokens);
 
-    AST_Node *function = new_ast_node(id_token, ND_FUNCTION_CALL);
+    AST_Node *function = new_ast_node(id_token, ND_FUNCTION_DEF);
     function->children = statements;
     return function;
 }
@@ -230,14 +227,14 @@ AST_Node *statement(Token_List *tokens) {
 //S = { statement }
 AST_Node *parse(Token_List *tokens) {
     //statements
-    AST_Node *statements, *current_statement, *new_statement;
-    while ((new_statement = statement(tokens)) != NULL) {
+    AST_Node *statements = NULL, *current_statement = NULL, *new_statement = NULL;
+    while (token_list_current(tokens) != NULL && (new_statement = statement(tokens)) != NULL) {
         if (statements == NULL) {
             statements = new_statement;
             current_statement = new_statement;
-        }
-        else {
+        } else {
             current_statement->next = new_statement;
+            current_statement = new_statement;
         }
     }
 
