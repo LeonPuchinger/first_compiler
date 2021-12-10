@@ -126,6 +126,9 @@ void token_list_add(Token_List *list, Token *new) {
 }
 
 Token *token_list_current(Token_List *list) {
+    if (list->current == NULL) {
+        return NULL;
+    }
     return list->current->token;
 }
 
