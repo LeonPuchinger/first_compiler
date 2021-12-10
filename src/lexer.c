@@ -300,24 +300,3 @@ int tokenize(char *text, int size, Token_List *tokens) {
     }
     return 0;
 }
-
-int main(int argc, char **argv) {
-    if (argc != 2) {
-        printf("ERROR: please specify input file!\n");
-        return 1;
-    }
-
-    FILE *file = fopen(argv[1], "r");
-    fseek(file, 0, SEEK_END);
-    int file_size = ftell(file);
-    rewind(file);
-    char *text = malloc(file_size);
-    fread(text, file_size, sizeof(char), file);
-    fclose(file);
-
-    Token_List *list = new_token_list();
-    int err = tokenize(text, file_size, list);
-    free_token_list(list);
-    free(text);
-    return err;
-}
