@@ -26,5 +26,8 @@ lexer:
 parser:
 	$(BUILDSTR) -c $(SRC)/parser.c -o $(BIN)/parser.o
 
-compiler: lexer parser
+symbol:
+	$(BUILDSTR) -c $(SRC)/symbol.c -o $(BIN)/symbol.o
+
+compiler: lexer parser symbol
 	$(BUILDSTR) $(SRC)/main.c $(BIN)/lexer.o $(BIN)/parser.o -o $(BIN)/compiler

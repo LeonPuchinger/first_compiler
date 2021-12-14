@@ -3,6 +3,30 @@
 
 #include "lexer.h"
 
+//universal list used in symbol table
+
+typedef struct List_Container {
+    struct List_Container *next;
+    void *item;
+} List_Container;
+
+List_Container *new_list_container(void *item);
+
+void free_list_container(List_Container *container);
+
+typedef struct {
+    List_Container *root, *current;
+} List;
+
+List *new_list();
+
+//'light' free, only free list itself, not contents
+void free_list(List *list);
+
+void list_add(List *list, void *item);
+
+//symbol table
+
 typedef enum {
     SYM_INT, SYM_FUNC,
 } Symbol_Type;
