@@ -34,7 +34,6 @@ typedef enum {
 typedef struct Symbol {
     Symbol_Type type;
     Token *name;
-    struct Symbol *next;
 } Symbol;
 
 //TODO no need to have 'public' headers
@@ -44,8 +43,7 @@ Symbol *new_symbol(Symbol_Type type, Token *name);
 void free_symbol(Symbol *symbol);
 
 typedef struct Scope {
-    Symbol *symbols;
-    struct Scope *children, *next;
+    List *symbols, *scopes;
 } Scope;
 
 //TODO no need to have 'public' headers
@@ -57,7 +55,8 @@ void free_scope(Scope *scope);
 void scope_add_symbol(Scope *scope, Symbol *symbol);
 
 typedef struct {
-    Scope *root, *current; //TODO current should be a stack
+    void *current; //TODO current should be a stack
+    List *scopes;
 } Symbol_Table;
 
 Symbol_Table *new_symbol_table();
