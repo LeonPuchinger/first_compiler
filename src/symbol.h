@@ -20,8 +20,11 @@ typedef struct {
 
 List *new_list();
 
-//'light' free, only free list itself, not contents
+//only free list itself, not contents
 void free_list(List *list);
+
+//free list and contents aswell
+void deep_free_list(List *list, void (*free_item)(void*));
 
 void list_add(List *list, void *item);
 
