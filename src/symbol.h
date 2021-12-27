@@ -24,7 +24,7 @@ List *new_list();
 void free_list(List *list);
 
 //free list and contents aswell
-void deep_free_list(List *list, void (*free_item)(void*));
+void deep_free_list(List *list, void (*free_item)());
 
 void list_add(List *list, void *item);
 

@@ -27,7 +27,7 @@ void free_list(List *list) {
     free(list);
 }
 
-void deep_free_list(List *list, void (*free_item)(void *)) {
+void deep_free_list(List *list, void (*free_item)()) {
     List_Container *current = list->root;
     while (current != NULL) {
         free_item(current->item);
