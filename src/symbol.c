@@ -86,6 +86,13 @@ void *stack_pop(Stack *stack) {
     return item;
 }
 
+void *stack_get(Stack *stack) {
+    if (stack == NULL || stack->top == NULL) {
+        return NULL;
+    }
+    return stack->top->item;
+}
+
 //symbol table
 
 Symbol *new_symbol(Symbol_Type type, Token *name) {
@@ -122,13 +129,33 @@ void scope_add_scope(Scope *scope, Scope *add_scope) {
 
 Symbol_Table *new_symbol_table() {
     Symbol_Table *new = malloc(sizeof(Symbol_Table));
+    Scope *root_scope = new_scope();
+    new->root_scope = root_scope;
     new->current = new_stack();
-    new->scopes = new_list(); //TODO create root scope
+    stack_push(new->current, root_scope);
     return new;
 }
 
 void free_symbol_table(Symbol_Table *table) {
     free_stack(table->current);
-    deep_free_list(table->scopes, &free_scope);
+    free_scope(table->root_scope);
     free(table);
+}
+
+void symbol_table_push(Symbol_Table *table) {
+    Scope *scope = new_scope();
+    Scope *current_scope = stack_get(table->current);
+    list_add(current_scope->scopes, scope);
+    stack_push(table->current, scope);
+}
+
+void symbol_table_pop(Symbol_Table *table) {
+    if (stack_pop(table->current) == NULL) {
+        stack_push(table->root_scope);
+    }
+}
+
+void symbol_table_set(Symbol_Table *table, Symbol *symbol) {
+    Scope *current_scope = stack_get(table->current);
+    list_add(current_scope->symbols, symbol);
 }
