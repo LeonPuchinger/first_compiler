@@ -77,7 +77,7 @@ void scope_add_symbol(Scope *scope, Symbol *symbol);
 void scope_add_scope(Scope *scope, Scope *add_scope);
 
 typedef struct {
-    void *current; //TODO current should be a stack
+    Stack *current;
     List *scopes;
 } Symbol_Table;
 

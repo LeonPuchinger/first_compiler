@@ -122,12 +122,13 @@ void scope_add_scope(Scope *scope, Scope *add_scope) {
 
 Symbol_Table *new_symbol_table() {
     Symbol_Table *new = malloc(sizeof(Symbol_Table));
-    new->current = NULL; //TODO init stack
+    new->current = new_stack();
     new->scopes = new_list(); //TODO create root scope
+    return new;
 }
 
 void free_symbol_table(Symbol_Table *table) {
-    //TODO free stack
+    free_stack(table->current);
     deep_free_list(table->scopes, &free_scope);
     free(table);
 }
