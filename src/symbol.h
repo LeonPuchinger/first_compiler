@@ -3,19 +3,21 @@
 
 #include "lexer.h"
 
-//universal list used in symbol table
+//universal collections used in symbol table
 
-typedef struct List_Container {
-    struct List_Container *next;
+typedef struct Collection_Container {
+    struct Collection_Container *next;
     void *item;
-} List_Container;
+} Collection_Container;
 
-List_Container *new_list_container(void *item);
+Collection_Container *new_collection_container(void *item);
 
-void free_list_container(List_Container *container);
+void free_collection_container(Collection_Container *container);
+
+//universal list
 
 typedef struct {
-    List_Container *root, *current;
+    Collection_Container *root, *current;
 } List;
 
 List *new_list();
@@ -27,6 +29,21 @@ void free_list(List *list);
 void deep_free_list(List *list, void (*free_item)());
 
 void list_add(List *list, void *item);
+
+//universal stack
+
+typedef struct {
+    Collection_Container *top;
+} Stack;
+
+Stack *new_stack();
+
+//only free stack itself, not contents
+void free_stack(Stack *stack);
+
+void stack_push(Stack *stack, void *item);
+
+void *stack_pop(Stack *stack);
 
 //symbol table
 

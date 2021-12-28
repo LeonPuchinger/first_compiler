@@ -1,18 +1,20 @@
 #include <stdlib.h>
 #include "symbol.h"
 
-//list
+//collections
 
-List_Container *new_list_container(void *item) {
-    List_Container *new = malloc(sizeof(List_Container));
+Collection_Container *new_collection_container(void *item) {
+    Collection_Container *new = malloc(sizeof(Collection_Container));
     new->item = item;
     new->next = NULL;
     return new;
 }
 
-void free_list_container(List_Container *container) {
+void free_collection_container(Collection_Container *container) {
     free(container);
 }
+
+//list
 
 List *new_list() {
     List *new = malloc(sizeof(List));
@@ -22,30 +24,66 @@ List *new_list() {
 }
 
 void free_list(List *list) {
-    List_Container *current = list->root;
+    Collection_Container *current = list->root;
     while (current != NULL) {
-        free_list_container(current);
+        free_collection_container(current);
+        current = current->next;
     }
     free(list);
 }
 
 void deep_free_list(List *list, void (*free_item)()) {
-    List_Container *current = list->root;
+    Collection_Container *current = list->root;
     while (current != NULL) {
         (*free_item)(current->item);
-        free_list_container(current);
+        free_collection_container(current);
+        current = current->next;
     }
     free(list);
 }
 
 void list_add(List *list, void *item) {
-    List_Container *container = new_list_container(item);
+    Collection_Container *container = new_collection_container(item);
     if (list->root == NULL) {
         list->root = container;
     } else {
         list->current->next = container;
     }
     list->current = container;
+}
+
+//stack
+
+Stack *new_stack() {
+    Stack *new = malloc(sizeof(Stack));
+    new->top = NULL;
+    return new;
+}
+
+void free_stack(Stack *stack) {
+    Collection_Container *current = stack->top;
+    while (current != NULL) {
+        free_collection_container(current);
+        current = current->next;
+    }
+    free(stack);
+}
+
+void stack_push(Stack *stack, void *item) {
+    Collection_Container *container = new_collection_container(item);
+    container->next = stack->top;
+    stack->top = container;
+}
+
+void *stack_pop(Stack *stack) {
+    Collection_Container *container = stack->top;
+    if (container == NULL) {
+        return NULL;
+    }
+    stack->top = container->next;
+    void *item = container->item;
+    free_collection_container(container);
+    return item;
 }
 
 //symbol table
