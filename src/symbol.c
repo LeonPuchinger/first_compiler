@@ -60,3 +60,24 @@ Symbol *new_symbol(Symbol_Type type, Token *name) {
 void free_symbol(Symbol *symbol) {
     free(symbol);
 }
+
+Scope *new_scope() {
+    Scope *new = malloc(sizeof(Scope));
+    new->symbols = new_list();
+    new->scopes = new_list();
+    return new;
+}
+
+void free_scope(Scope *scope) {
+    deep_free_list(scope->symbols, &free_symbol);
+    deep_free_list(scope->scopes, &free_scope);
+    free(scope);
+}
+
+void scope_add_symbol(Scope *scope, Symbol *symbol) {
+    list_add(scope->symbols, symbol);
+}
+
+void scope_add_scope(Scope *scope, Scope *add_scope) {
+    list_add(scope->scopes, add_scope);
+}
