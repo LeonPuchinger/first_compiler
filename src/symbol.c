@@ -159,3 +159,20 @@ void symbol_table_set(Symbol_Table *table, Symbol *symbol) {
     Scope *current_scope = stack_get(table->current);
     list_add(current_scope->symbols, symbol);
 }
+
+Symbol *symbol_table_get(Symbol_Table *table, Token *name) {
+    Collection_Container *current_scope_cont = table->current->top;
+    while (current_scope_cont != NULL) {
+        Scope *current_scope = current_scope_cont->item;
+        Collection_Container *current_sym_cont = current_scope->symbols->root;
+        while (current_sym_cont != NULL) {
+            Symbol *current_symbol = current_sym_cont->item;
+            if (current_symbol->name == name) {
+                return current_symbol;
+            }
+            current_sym_cont = current_sym_cont->next;
+        }
+        current_scope_cont = current_scope_cont->next;
+    }
+    return NULL;
+}
