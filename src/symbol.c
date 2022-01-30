@@ -151,7 +151,7 @@ void symbol_table_push(Symbol_Table *table) {
 
 void symbol_table_pop(Symbol_Table *table) {
     if (stack_pop(table->current) == NULL) {
-        stack_push(table->root_scope);
+        stack_push(table->current, table->root_scope);
     }
 }
 
