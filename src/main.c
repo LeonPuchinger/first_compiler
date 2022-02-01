@@ -4,6 +4,8 @@
 #include <sys/stat.h>
 #include "lexer.h"
 #include "parser.h"
+#include "symbol.h"
+#include "analysis.h"
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -34,11 +36,27 @@ int main(int argc, char **argv) {
     fread(text, file_size, sizeof(char), file);
     fclose(file);
 
+    //TODO use unified/consistent error handling for each compiler step
+
+    int err;
+
     Token_List *tokens = new_token_list();
-    int err = tokenize(text, file_size, tokens);
+    err = tokenize(text, file_size, tokens);
+    if (err) {
+        printf("Error while running lexer\n");
+        return 1;
+    }
+
     AST_Node *ast = parse(tokens);
 
-    //TODO free AST
+    Symbol_Table *table = new_symbol_table();
+    err = semantic_analysis(ast, table);
+    if (err) {
+        printf("Error while running semantic analysis\n");
+        return 1;
+    }
+
+    //TODO free AST, Symbol Table
     free_token_list(tokens);
     free(text);
     return err;
