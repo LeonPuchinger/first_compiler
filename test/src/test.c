@@ -30,6 +30,7 @@ void gather_tests(Test_Function *tests, ...) {
     while (test != NULL) {
         int result = (*test)();
         if (result) {
+            printf("Test failed! index: %d\n", failed);
             failed += 1;
         } else {
             succeeded += 1;
