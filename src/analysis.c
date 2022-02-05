@@ -30,6 +30,20 @@ int check_symbols(AST_Node *ast_root, Symbol_Table *table) {
             //forward
             statement = statement->next;
         }
+        else if (statement->node_type == ND_FUNCTION_CALL) {
+            Symbol *sym = symbol_table_get(table, statement->token);
+            //check if function is defined
+            if (!sym) {
+                printf("ERROR: %s is not defined\n", statement->token->value);
+                return 1;
+            }
+            //check if function even is a function
+            if (sym->type != SYM_FUNC) {
+                printf("ERROR: %s is not callable\n", statement->token->value);
+                return 1;
+            }
+            statement = statement->next;
+        }
         //TODO add handlers for missing node types
         else {
             printf("INTERNAL ERROR: cannot process AST-Node Type\n");
