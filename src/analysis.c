@@ -55,6 +55,13 @@ int check_symbols(AST_Node *ast_root, Symbol_Table *table) {
 
             statement = statement->next;
         }
+        else if (statement->node_type == ND_ADD || statement->node_type == ND_SUB) {
+            //check both parts of addition or subtraction
+            err = check_symbols(statement->lhs, table);
+            if (err) return err;
+            err = check_symbols(statement->rhs, table);
+            if (err) return err;
+        }
         //TODO add handlers for missing node types
         else {
             printf("INTERNAL ERROR: cannot process AST-Node Type\n");
