@@ -17,8 +17,12 @@ typedef struct AST_Node {
 
     //n-ary AST node
     //used for: AST root, function definition
-    //children: when the node itself has children, next: when the node is part of a list of children
-    struct AST_Node *children, *next;
+    //children: when the node itself has children
+    struct AST_Node *children;
+
+    //next: when the node is part of a list of children
+    //important: also use next in binary nodes to make iteration easier (lhs->next == rhs, rhs->next == NULL)
+    struct AST_Node *next;
 
     //no children needed for: function call, integer, variable
 } AST_Node;

@@ -92,6 +92,7 @@ AST_Node *expression(Token_List *tokens) {
     }
     op->lhs = s1;
     op->rhs = s2;
+    op->lhs->next = op->rhs;
     return op;
 }
 
@@ -152,6 +153,7 @@ AST_Node *assignment(Token_List *tokens) {
     AST_Node *assign = new_ast_node(equ_token, ND_ASSIGN);
     assign->lhs = var;
     assign->rhs = expr;
+    assign->lhs->next = assign->rhs;
     return assign;
 }
 
