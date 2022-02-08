@@ -44,6 +44,17 @@ int check_symbols(AST_Node *ast_root, Symbol_Table *table) {
             }
             statement = statement->next;
         }
+        else if (statement->node_type == ND_ASSIGN) {
+            //register assigned symbol if it does not exist yet
+            if (!symbol_table_get(table, statement->lhs)) {
+                symbol_table_set(table, new_symbol(SYM_INT, statement->lhs->token));
+            }
+            //check expression symbols
+            err = check_symbols(statement->rhs, table);
+            if (err) return err;
+
+            statement = statement->next;
+        }
         //TODO add handlers for missing node types
         else {
             printf("INTERNAL ERROR: cannot process AST-Node Type\n");
@@ -56,7 +67,7 @@ int check_symbols(AST_Node *ast_root, Symbol_Table *table) {
 
 int semantic_analysis(AST_Node *ast_root, Symbol_Table *table) {
     if (ast_root->node_type != ND_ROOT) {
-        printf("ERROR: AST has no root node\n");
+        printf("INTERNAL ERROR: AST has no root node\n");
         return 1;
     }
 
