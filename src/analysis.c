@@ -46,7 +46,7 @@ int check_symbols(AST_Node *ast_root, Symbol_Table *table) {
         }
         else if (statement->node_type == ND_ASSIGN) {
             //register assigned symbol if it does not exist yet
-            if (!symbol_table_get(table, statement->lhs)) {
+            if (!symbol_table_get(table, statement->lhs->token)) {
                 symbol_table_set(table, new_symbol(SYM_INT, statement->lhs->token));
             }
             //check expression symbols
