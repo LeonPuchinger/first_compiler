@@ -27,8 +27,6 @@ int check_symbols(AST_Node *ast_root, Symbol_Table *table) {
             err = check_symbols(statement->children, table);
             if (err) return err;
             symbol_table_pop(table);
-            //forward
-            statement = statement->next;
         }
         else if (statement->node_type == ND_FUNCTION_CALL) {
             Symbol *sym = symbol_table_get(table, statement->token);
@@ -42,7 +40,6 @@ int check_symbols(AST_Node *ast_root, Symbol_Table *table) {
                 printf("ERROR: %s is not callable\n", statement->token->value);
                 return 1;
             }
-            statement = statement->next;
         }
         else if (statement->node_type == ND_ASSIGN) {
             //register assigned symbol if it does not exist yet
@@ -52,8 +49,6 @@ int check_symbols(AST_Node *ast_root, Symbol_Table *table) {
             //check expression symbols
             err = check_symbols(statement->rhs, table);
             if (err) return err;
-
-            statement = statement->next;
         }
         else if (statement->node_type == ND_ADD || statement->node_type == ND_SUB) {
             //check both parts of addition or subtraction
@@ -73,6 +68,8 @@ int check_symbols(AST_Node *ast_root, Symbol_Table *table) {
             printf("INTERNAL ERROR: cannot process AST-Node Type\n");
             return 1;
         }
+        //forward
+        statement = statement->next;
     }
 
     return 0;
