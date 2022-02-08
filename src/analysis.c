@@ -62,8 +62,14 @@ int check_symbols(AST_Node *ast_root, Symbol_Table *table) {
             err = check_symbols(statement->rhs, table);
             if (err) return err;
         }
-        //TODO add handlers for missing node types
-        else {
+        else if (statement->node_type == ND_VAR) {
+            if (!symbol_table_get(table, statement->token)) {
+                printf("ERROR: %s is not defined\n", statement->token->value);
+                return 1;
+            }
+        }
+        //throw error except for nodes that do not have to be checked
+        else if (statement->node_type != ND_INT) {
             printf("INTERNAL ERROR: cannot process AST-Node Type\n");
             return 1;
         }
