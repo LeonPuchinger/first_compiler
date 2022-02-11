@@ -15,6 +15,8 @@ Token *new_token(Token_Type type, char *value, int value_size);
 
 void free_token(Token *token);
 
+int token_equals(Token *first, Token *second);
+
 typedef struct Token_List_Node {
     struct Token_List_Node *next, *previous;
     Token *token;

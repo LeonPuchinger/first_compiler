@@ -23,6 +23,16 @@ void free_token(Token *token) {
     free(token);
 }
 
+int token_equals(Token *first, Token *second) {
+    if (first == second) {
+        return 1;
+    }
+    if (first->value_size != second->value_size) {
+        return 0;
+    }
+    return strncmp(first->value, second->value, first->value_size) == 0;
+}
+
 int error(char *msg, char *text, int pos) {
     int line = 1;
     int line_pos = 1;

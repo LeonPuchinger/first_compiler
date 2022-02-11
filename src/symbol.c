@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "symbol.h"
+#include "lexer.h"
 
 //collections
 
@@ -167,7 +168,7 @@ Symbol *symbol_table_get(Symbol_Table *table, Token *name) {
         Collection_Container *current_sym_cont = current_scope->symbols->root;
         while (current_sym_cont != NULL) {
             Symbol *current_symbol = current_sym_cont->item;
-            if (current_symbol->name == name) {
+            if (token_equals(current_symbol->name, name)) {
                 return current_symbol;
             }
             current_sym_cont = current_sym_cont->next;
