@@ -3,17 +3,8 @@
 #include "parser.h"
 #include "symbol.h"
 
-int check_symbols(AST_Node *ast_root, Symbol_Table *table) {
-    AST_Node *statement;
-    //check if root node has children in form of list or lhs/rhs
-    if (ast_root->node_type == ND_ROOT || ast_root->node_type == ND_FUNCTION_DEF) {
-        statement = ast_root->children;
-    } else {
-        statement = ast_root->lhs;
-        //TODO add mechanism to signal if rhs or NULL is next during forward
-    }
-
-    int err;
+int check_symbols(AST_Node *statement, Symbol_Table *table) {
+    int err = 0;
     while (statement != NULL) {
         if (statement->node_type == ND_FUNCTION_DEF) {
             //check and register function name
@@ -81,5 +72,5 @@ int semantic_analysis(AST_Node *ast_root, Symbol_Table *table) {
         return 1;
     }
 
-    return check_symbols(ast_root, table);
+    return check_symbols(ast_root->children, table);
 }
