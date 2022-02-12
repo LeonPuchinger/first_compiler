@@ -49,8 +49,14 @@ int check_symbols(AST_Node *statement, Symbol_Table *table) {
             if (err) return err;
         }
         else if (statement->node_type == ND_VAR) {
-            if (!symbol_table_get(table, statement->token)) {
+            Symbol *sym = symbol_table_get(table, statement->token);
+            if (!sym) {
                 printf("ERROR: %s is not defined\n", statement->token->value);
+                return 1;
+            }
+            //check type
+            if (sym->type != SYM_INT) {
+                printf("ERROR: %s has mismatched type\n", statement->token->value);
                 return 1;
             }
         }
