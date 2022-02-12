@@ -33,13 +33,20 @@ int check_symbols(AST_Node *statement, Symbol_Table *table) {
             }
         }
         else if (statement->node_type == ND_ASSIGN) {
+            //rhs of assign needs to be check first
+            //this way, a variable can't be assigned to itself during its initial assignment
+            err = check_symbols(statement->rhs, table);
+            if (err) return err;
+
             //register assigned symbol if it does not exist yet
             if (!symbol_table_get(table, statement->lhs->token)) {
                 symbol_table_set(table, new_symbol(SYM_INT, statement->lhs->token));
             }
-            //check expression symbols
-            err = check_symbols(statement->rhs, table);
-            if (err) return err;
+            else {
+                //if symbol already exists, check it (e.g. for type)
+                err = check_symbols(statement->lhs, table);
+                if (err) return err;
+            }
         }
         else if (statement->node_type == ND_ADD || statement->node_type == ND_SUB) {
             //check both parts of addition or subtraction
