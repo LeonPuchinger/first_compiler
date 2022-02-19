@@ -32,11 +32,14 @@ symbol:
 analysis:
 	$(BUILDSTR) -c $(SRC)/analysis.c -o $(BIN)/analysis.o
 
+codegen:
+	$(BUILDSTR) -c $(SRC)/codegen.c -o $(BIN)/codegen.o
+
 # use partial linking to generate a large object file called "compiler_artifact.o".
 # it contains all the compiler steps and can be used to easily link all the necessary
 # parts to a single test file (which often requires all compiler steps).
 # subsequently link the "compiler_artifact.o" with the compiled version of "main.c"
 # to generate the actual compiler executable.
-compiler: lexer parser symbol analysis
-	ld -r $(BIN)/lexer.o $(BIN)/parser.o $(BIN)/symbol.o $(BIN)/analysis.o -o bin/compiler_artifact.o
+compiler: lexer parser symbol analysis codegen
+	ld -r $(BIN)/lexer.o $(BIN)/parser.o $(BIN)/symbol.o $(BIN)/analysis.o $(BIN)/codegen.o -o bin/compiler_artifact.o
 	$(BUILDSTR) $(SRC)/main.c $(BIN)/compiler_artifact.o -o $(BIN)/compiler

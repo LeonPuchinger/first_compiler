@@ -6,6 +6,7 @@
 #include "parser.h"
 #include "symbol.h"
 #include "analysis.h"
+#include "codegen.h"
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -55,6 +56,14 @@ int main(int argc, char **argv) {
         printf("Error while running semantic analysis\n");
         return 1;
     }
+
+    FILE *asm_file = fopen("out/out.asm", "w");
+    err = codegen(ast, table, asm_file);
+    if (err) {
+        printf("Error while running codegen\n");
+        return 1;
+    }
+    fclose(asm_file);
 
     //TODO free AST, Symbol Table
     free_token_list(tokens);
