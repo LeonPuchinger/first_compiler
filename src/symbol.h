@@ -56,6 +56,7 @@ typedef enum {
 typedef struct Symbol {
     Symbol_Type type;
     Token *name;
+    int addr;
 } Symbol;
 
 //TODO no need to have 'public' headers

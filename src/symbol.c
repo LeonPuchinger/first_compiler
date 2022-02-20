@@ -100,6 +100,7 @@ Symbol *new_symbol(Symbol_Type type, Token *name) {
     Symbol *new = malloc(sizeof(Symbol));
     new->type = type;
     new->name = name;
+    new->addr = 0;
     return new;
 }
 
