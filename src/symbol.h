@@ -97,7 +97,10 @@ void symbol_table_pop(Symbol_Table *table);
 //set new symbol to current scope
 void symbol_table_set(Symbol_Table *table, Symbol *symbol);
 
-//get symbol by name from current scope
+//get symbol by name starting from current scope (descending through scopes)
 Symbol *symbol_table_get(Symbol_Table *table, Token *name);
+
+//check if symbol is defined in the current scope only
+int symbol_table_is_local(Symbol_Table *table, Token *name);
 
 #endif

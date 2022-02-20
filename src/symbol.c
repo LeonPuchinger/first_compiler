@@ -178,3 +178,16 @@ Symbol *symbol_table_get(Symbol_Table *table, Token *name) {
     }
     return NULL;
 }
+
+int symbol_table_is_local(Symbol_Table *table, Token *name) {
+    Scope *current_scope = table->current->top->item;
+    Collection_Container *current_sym_cont = current_scope->symbols->root;
+    while (current_sym_cont != NULL) {
+        Symbol *current_symbol = current_sym_cont->item;
+        if (token_equals(current_symbol->name, name)) {
+            return 1;
+        }
+        current_sym_cont = current_sym_cont->next;
+    }
+    return 0;
+}
