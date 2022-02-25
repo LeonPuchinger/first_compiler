@@ -97,6 +97,12 @@ void symbol_table_pop(Symbol_Table *table);
 //reset current scope to root scope
 void symbol_table_reset_current(Symbol_Table *table);
 
+//set current scope to first child scope (already existent)
+void symbol_table_walk_child(Symbol_Table *table);
+
+//set current scope to next sibling scope (already existent)
+void symbol_table_walk_next(Symbol_Table *table);
+
 //set new symbol to current scope
 void symbol_table_set(Symbol_Table *table, Symbol *symbol);
 

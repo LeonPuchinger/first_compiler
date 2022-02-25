@@ -163,6 +163,23 @@ void symbol_table_reset_current(Symbol_Table *table) {
     }
 }
 
+void symbol_table_walk_child(Symbol_Table *table) {
+    Scope *current_scope = table->current->top->item;
+    stack_push(table->current, current_scope->scopes->root->item);
+}
+
+void symbol_table_walk_next(Symbol_Table *table) {
+    Scope *current_scope = table->current->top->item;
+    if (current_scope != table->root_scope) {
+        symbol_table_pop(table);
+        Collection_Container *current_scope_cont = current_scope->scopes->root;
+        while (current_scope_cont != NULL && current_scope_cont->item != current_scope) {
+            current_scope_cont = current_scope_cont->next;
+        }
+        stack_push(table->current, current_scope_cont->next->item);
+    }
+}
+
 void symbol_table_set(Symbol_Table *table, Symbol *symbol) {
     Scope *current_scope = stack_get(table->current);
     list_add(current_scope->symbols, symbol);
