@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "test.h"
 #include "../../src/symbol.h"
 #include "../../src/lexer.h"
@@ -9,9 +10,23 @@ Symbol_Table *empty_table() {
     return new_symbol_table();
 }
 
-Symbol *symbol_ident(char *token_content, int token_size) {
-    Token *a_tk = new_token(TK_IDENT, token_content, token_size);
+Symbol *symbol_ident(char *token_content) {
+    Token *a_tk = new_token(TK_IDENT, token_content, strlen(token_content));
     return new_symbol(SYM_INT, a_tk);
+}
+
+Symbol_Table *populated_table() {
+    Symbol_Table *table = empty_table();
+    symbol_table_set(table, symbol_ident("a"));
+    
+    symbol_table_push(table);
+    symbol_table_set(table, symbol_ident("b"));
+    symbol_table_pop(table);
+
+    symbol_table_push(table);
+    symbol_table_set(table, symbol_ident("c"));
+
+    return table;
 }
 
 //Tests
@@ -20,7 +35,7 @@ int test_set_get() {
     int err;
     Symbol_Table *table = empty_table();
 
-    Symbol *a_sym = symbol_ident("a", 1);
+    Symbol *a_sym = symbol_ident("a");
     symbol_table_set(table, a_sym);
     Symbol *a_return = symbol_table_get(table, a_sym->name);
     err = assert(a_sym, a_return);
@@ -33,8 +48,8 @@ int test_pushed_scopes() {
     int err;
     Symbol_Table *table = empty_table();
 
-    Symbol *a_sym = symbol_ident("a", 1);
-    Symbol *b_sym = symbol_ident("b", 1);
+    Symbol *a_sym = symbol_ident("a");
+    Symbol *b_sym = symbol_ident("b");
     Symbol *a_return, *b_return;
 
     symbol_table_set(table, a_sym);
@@ -70,8 +85,8 @@ int test_sibling_scopes() {
     int err;
     Symbol_Table *table = empty_table();
 
-    Symbol *a_sym = symbol_ident("a", 1);
-    Symbol *b_sym = symbol_ident("b", 1);
+    Symbol *a_sym = symbol_ident("a");
+    Symbol *b_sym = symbol_ident("b");
     Symbol *a_return, *b_return;
 
     symbol_table_push(table);
@@ -94,11 +109,29 @@ int test_sibling_scopes() {
     return 0;
 }
 
+int test_reset_table() {
+    int err;
+    Symbol_Table *table = populated_table();
+
+    symbol_table_reset_current(table);
+
+    Symbol *a_return = symbol_table_get(table, symbol_ident("a")->name);
+    err = assert_not(a_return, NULL);
+    if (err) return err;
+
+    Symbol *b_return = symbol_table_get(table, symbol_ident("b")->name);
+    err = assert(b_return, NULL);
+    if (err) return err;
+
+    return 0;
+}
+
 int main() {
     gather_tests(
         test_set_get,
         test_pushed_scopes,
         test_sibling_scopes,
+        test_reset_table,
         NULL
     );
 }

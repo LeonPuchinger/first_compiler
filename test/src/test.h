@@ -19,6 +19,9 @@ typedef int Test_Function();
 //assert pointer equality
 int assert(void *actual, void *expected);
 
+//assert pointer inequality
+int assert_not(void *actual, void *not_expected);
+
 //assert int equality
 int assert_int(int actual, int expected);
 
