@@ -157,6 +157,12 @@ void symbol_table_pop(Symbol_Table *table) {
     }
 }
 
+void symbol_table_reset_current(Symbol_Table *table) {
+    while (table->current->top->next != NULL) {
+        stack_pop(table->current);
+    }
+}
+
 void symbol_table_set(Symbol_Table *table, Symbol *symbol) {
     Scope *current_scope = stack_get(table->current);
     list_add(current_scope->symbols, symbol);

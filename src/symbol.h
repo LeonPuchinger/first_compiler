@@ -94,6 +94,9 @@ void symbol_table_push(Symbol_Table *table);
 //return to parent scope
 void symbol_table_pop(Symbol_Table *table);
 
+//reset current scope to root scope
+void symbol_table_reset_current(Symbol_Table *table);
+
 //set new symbol to current scope
 void symbol_table_set(Symbol_Table *table, Symbol *symbol);
 
