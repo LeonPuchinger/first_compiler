@@ -18,7 +18,7 @@ Symbol *symbol_ident(char *token_content) {
 Symbol_Table *populated_table() {
     Symbol_Table *table = empty_table();
     symbol_table_set(table, symbol_ident("a"));
-    
+
     symbol_table_push(table);
     symbol_table_set(table, symbol_ident("b"));
     symbol_table_pop(table);
@@ -126,12 +126,27 @@ int test_reset_table() {
     return 0;
 }
 
+int test_walk_child() {
+    int err;
+    Symbol_Table *table = populated_table();
+    symbol_table_reset_current(table);
+
+    symbol_table_walk_child(table);
+
+    Symbol *b_return = symbol_table_get(table, symbol_ident("b")->name);
+    err = assert_not(b_return, NULL);
+    if (err) return err;
+
+    return 0;
+}
+
 int main() {
     gather_tests(
         test_set_get,
         test_pushed_scopes,
         test_sibling_scopes,
         test_reset_table,
+        test_walk_child,
         NULL
     );
 }
