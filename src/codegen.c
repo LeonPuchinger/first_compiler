@@ -4,8 +4,11 @@
 #include "symbol.h"
 
 #define INDENT_WIDTH 4
+#define REGISTER_SIZE 8 //64-bit ^= 8 byte
 
 static int current_indent = 0;
+//amount of bytes on the stack in addition to vars (e.g. return addrs)
+static int current_stack_addr_offset = 0;
 
 void write(FILE *file, char *buffer) {
     for (int i = 0; i < current_indent * INDENT_WIDTH; i++) {
@@ -47,9 +50,40 @@ void assign_addrs(Symbol_Table *table) {
     _assign_addrs(table->root_scope, 0);
 }
 
+int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) {
+    AST_Node *current_statement = statements;
+    while (current_statement != NULL) {
+        if (current_statement->node_type == ND_ASSIGN) {
+            //TODO write assign
+        }
+        else if (current_statement->node_type == ND_FUNCTION_DEF) {
+            //TODO write func def
+        }
+        else if (current_statement->node_type == ND_FUNCTION_CALL) {
+            //TODO write func call
+        }
+        else {
+            printf("ERROR: AST_Node is not a statement\n");
+            return 1;
+        }
 
-int codegen(AST_Node *ast, Symbol_Table *table, FILE *out_file) {
-    write_header(out_file);
-    assign_addrs(table);
+        //TODO "default" -> error: not a statement (assignment call function)
+
+        current_statement = current_statement->next;
+    }
+
     return 0;
+}
+
+int codegen(AST_Node *ast_root, Symbol_Table *table, FILE *out_file) {
+    write_header(out_file);
+    symbol_table_reset_current(table);
+    assign_addrs(table);
+
+    if (ast_root->node_type != ND_ROOT) {
+        printf("INTERNAL ERROR: AST has no root node\n");
+        return 1;
+    }
+
+    return write_statements(ast_root->children, table, out_file);
 }
