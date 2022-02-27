@@ -140,6 +140,26 @@ int test_walk_child() {
     return 0;
 }
 
+//dependent on success of test_reset_table & test_walk_child
+int test_walk_next() {
+    int err;
+    Symbol_Table *table = populated_table();
+    symbol_table_reset_current(table);
+    symbol_table_walk_child(table);
+
+    symbol_table_walk_next(table);
+
+    Symbol *b_return = symbol_table_get(table, symbol_ident("b")->name);
+    err = assert(b_return, NULL);
+    if (err) return err;
+
+    Symbol *c_return = symbol_table_get(table, symbol_ident("c")->name);
+    err = assert_not(c_return, NULL);
+    if (err) return err;
+
+    return 0;
+}
+
 int main() {
     gather_tests(
         test_set_get,
@@ -147,6 +167,7 @@ int main() {
         test_sibling_scopes,
         test_reset_table,
         test_walk_child,
+        test_walk_next,
         NULL
     );
 }
