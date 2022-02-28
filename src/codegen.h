@@ -5,6 +5,6 @@
 #include "parser.h"
 #include "symbol.h"
 
-int codegen(AST_Node *ast, Symbol_Table *table, FILE *out_file);
+int codegen(AST_Node *ast_root, Symbol_Table *table, FILE *out_file);
 
 #endif
