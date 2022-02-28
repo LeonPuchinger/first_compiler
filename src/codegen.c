@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdarg.h>
 #include "codegen.h"
 #include "parser.h"
 #include "symbol.h"
@@ -10,11 +11,16 @@ static int current_indent = 0;
 //amount of bytes on the stack in addition to vars (e.g. return addrs)
 static int current_stack_addr_offset = 0;
 
-void write(FILE *file, char *buffer) {
+void writeln(FILE *file, char *fmt, ...) {
+    //indent line
     for (int i = 0; i < current_indent * INDENT_WIDTH; i++) {
         fprintf(file, " ");
     }
-    fprintf(file, "%s\n", buffer);
+    va_list fmt_args;
+    va_start(fmt_args, fmt);
+    vfprintf(file, fmt, fmt_args);
+    va_end(fmt_args);
+    fprintf(file, "\n");
 }
 
 void write_header(FILE *file) {
@@ -22,7 +28,7 @@ void write_header(FILE *file) {
         "section .text\n"
         "global _start\n\n"
         "_start:";
-    write(file, header);
+    writeln(file, header);
 }
 
 void _assign_addrs(Scope *scope, int addr_offset) {
