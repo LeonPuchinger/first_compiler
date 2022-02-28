@@ -25,6 +25,9 @@ int assert_not(void *actual, void *not_expected);
 //assert int equality
 int assert_int(int actual, int expected);
 
+//assert int inequality
+int assert_int_not(int actual, int not_expected);
+
 //execute all given test functions and display a summary
 //IMPORTANT: make sure to terminate tests varargs list with NULL at the end!
 //

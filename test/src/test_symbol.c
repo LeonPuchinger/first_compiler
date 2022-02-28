@@ -160,6 +160,25 @@ int test_walk_next() {
     return 0;
 }
 
+int test_symbol_table_is_local() {
+    int err;
+    Symbol_Table *table = populated_table();
+
+    //child scope
+    int is_local = 0;
+    is_local = symbol_table_is_local(table, symbol_ident("c")->name);
+    err = assert_int_not(is_local, 0);
+    if (err) return err;
+
+    //root scope
+    symbol_table_reset_current(table);
+    is_local = symbol_table_is_local(table, symbol_ident("a")->name);
+    err = assert_int_not(is_local, 0);
+    if (err) return err;
+
+    return 0;
+}
+
 int main() {
     gather_tests(
         test_set_get,
@@ -168,6 +187,7 @@ int main() {
         test_reset_table,
         test_walk_child,
         test_walk_next,
+        test_symbol_table_is_local,
         NULL
     );
 }

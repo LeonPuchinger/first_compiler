@@ -15,7 +15,7 @@ int assert(void *actual, void *expected) {
 int assert_not(void *actual, void *not_expected) {
     if (actual == not_expected) {
         printf("==== ASSERTION FAILED: ====\n");
-        printf("%p (actual) == %p (expected)\n", actual, not_expected);
+        printf("%p (actual) == %p (not expected)\n", actual, not_expected);
         return 1;
     }
     return 0;
@@ -25,6 +25,15 @@ int assert_int(int actual, int expected) {
     if (actual != expected) {
         printf("==== ASSERTION FAILED: ====\n");
         printf("%d (actual) != %d (expected)\n", actual, expected);
+        return 1;
+    }
+    return 0;
+}
+
+int assert_int_not(int actual, int not_expected) {
+    if (actual == not_expected) {
+        printf("==== ASSERTION FAILED: ====\n");
+        printf("%d (actual) == %d (not expected)\n", actual, not_expected);
         return 1;
     }
     return 0;
