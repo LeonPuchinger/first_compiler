@@ -84,7 +84,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
     if (is_initial_assign) {
         if (is_composite) {
             //init = a +/- b
-            writef(out_file, "mov rax ");
+            writef(out_file, "mov rax, ");
             if (expr->lhs->node_type == ND_VAR) {
                 //init = var +/- ...
                 int addr = stack_addr(symbol_table_get(table, expr->lhs->token)->addr);
@@ -97,10 +97,10 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             }
             //write operator
             if (expr->node_type == ND_ADD) {
-                writef(out_file, "add rax ");
+                writef(out_file, "add rax, ");
             }
             else {
-                writef(out_file, "sub rax ");
+                writef(out_file, "sub rax, ");
             }
             if (expr->rhs->node_type == ND_VAR) {
                 //init = ... +/- var
@@ -131,7 +131,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
     }
     else {
         int assignee_addr = stack_addr(symbol_table_get(table, assignee->token)->addr);
-        writef(out_file, "mov rbp - %d ", assignee_addr);
+        writef(out_file, "mov rbp - %d, ", assignee_addr);
         if (is_composite) {
             //exist = a +/- b
             if (expr->lhs->node_type == ND_VAR) {
@@ -151,7 +151,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             else {
                 writef(out_file, "sub ");
             }
-            writef(out_file, "rbp - %d ", assignee_addr);
+            writef(out_file, "rbp - %d, ", assignee_addr);
             if (expr->rhs->node_type == ND_VAR) {
                 //exist = ... +/- var
                 int addr = stack_addr(symbol_table_get(table, expr->rhs->token)->addr);
@@ -165,7 +165,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
         }
         else {
             //exist = var/const
-            writef(out_file, "mov rbp - %d", assignee_addr);
+            writef(out_file, "mov rbp - %d,", assignee_addr);
             if (expr->node_type == ND_VAR) {
                 //exist = var
                 int addr = stack_addr(symbol_table_get(table, expr->token)->addr);
