@@ -114,6 +114,20 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             }
             writelnf(out_file, "push rax");
         }
+        else {
+            //init = var/const
+            writef(out_file, "push ");
+            if (expr->node_type == ND_VAR) {
+                //init = var
+                int addr = stack_addr(symbol_table_get(table, expr->token)->addr);
+                writelnf(out_file, "rbp - %d", addr);
+            }
+            else {
+                //init = const
+                char *constant = expr->token->value;
+                writelnf(out_file, "%s", constant);
+            }
+        }
     }
     else {
         int assignee_addr = stack_addr(symbol_table_get(table, assignee->token)->addr);
