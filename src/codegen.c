@@ -11,14 +11,28 @@ static int current_indent = 0;
 //amount of bytes on the stack in addition to vars (e.g. return addrs)
 static int current_stack_addr_offset = 0;
 
-void writeln(FILE *file, char *fmt, ...) {
+//varargs style version of writef
+void vwritef(FILE *file, char *fmt, va_list fmt_args) {
     //indent line
     for (int i = 0; i < current_indent * INDENT_WIDTH; i++) {
         fprintf(file, " ");
     }
+    vfprintf(file, fmt, fmt_args);
+}
+
+//write indented output to file with variable amount of format parameters
+void writef(FILE *file, char *fmt, ...) {
     va_list fmt_args;
     va_start(fmt_args, fmt);
-    vfprintf(file, fmt, fmt_args);
+    vwritef(file, fmt, fmt_args);
+    va_end(fmt_args);
+}
+
+//write indented output to file with newline and variable amount of format parameters
+void writelnf(FILE *file, char *fmt, ...) {
+    va_list fmt_args;
+    va_start(fmt_args, fmt);
+    vwritef(file, fmt, fmt_args);
     va_end(fmt_args);
     fprintf(file, "\n");
 }
@@ -28,7 +42,7 @@ void write_header(FILE *file) {
         "section .text\n"
         "global _start\n\n"
         "_start:";
-    writeln(file, header);
+    writelnf(file, header);
 }
 
 void _assign_addrs(Scope *scope, int addr_offset) {
