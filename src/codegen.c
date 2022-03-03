@@ -177,7 +177,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             else {
                 //exist = const
                 char *constant = expr->token->value;
-                writelnf(out_file, "mov [rbp - %d], %s", assignee_addr, constant);
+                writelnf(out_file, "mov qword [rbp - %d], %s", assignee_addr, constant);
             }
         }
     }
