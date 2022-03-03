@@ -41,7 +41,8 @@ void write_header(FILE *file) {
     char header[] =
         "section .text\n"
         "global _start\n\n"
-        "_start:";
+        "_start:\n"
+        "mov rbp, rsp\n";
     writelnf(file, header);
 }
 
