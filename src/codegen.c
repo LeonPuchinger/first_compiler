@@ -79,7 +79,9 @@ int stack_addr(int virtual_addr) {
 int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
     AST_Node *assignee = assignment->lhs;
     AST_Node *expr = assignment->rhs;
-    int is_initial_assign = symbol_table_is_local(table, assignee->token);
+    Symbol *assignee_sym = symbol_table_is_local(table, assignee->token);
+    int is_initial_assign = assignee_sym != NULL && !assignee_sym->initialized;
+    assignee_sym->initialized = 1;
     int is_composite = expr->node_type == ND_ADD || expr->node_type == ND_SUB;
     if (is_initial_assign) {
         if (is_composite) {

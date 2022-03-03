@@ -57,6 +57,7 @@ typedef struct Symbol {
     Symbol_Type type;
     Token *name;
     int addr;
+    char initialized;
 } Symbol;
 
 //TODO no need to have 'public' headers
@@ -109,7 +110,7 @@ void symbol_table_set(Symbol_Table *table, Symbol *symbol);
 //get symbol by name starting from current scope (descending through scopes)
 Symbol *symbol_table_get(Symbol_Table *table, Token *name);
 
-//check if symbol is defined in the current scope only
-int symbol_table_is_local(Symbol_Table *table, Token *name);
+//check if symbol is defined in the current scope only and return the Symbol in that case
+Symbol *symbol_table_is_local(Symbol_Table *table, Token *name);
 
 #endif
