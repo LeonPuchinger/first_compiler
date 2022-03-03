@@ -168,16 +168,16 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
         }
         else {
             //exist = var/const
-            writef(out_file, "mov rbp - %d,", assignee_addr);
             if (expr->node_type == ND_VAR) {
                 //exist = var
                 int addr = stack_addr(symbol_table_get(table, expr->token)->addr);
-                writelnf(out_file, "rbp - %d", addr);
+                writelnf(out_file, "mov rax, [rbp - %d]", addr);
+                writelnf(out_file, "mov [rbp - %d], rax", assignee_addr);
             }
             else {
                 //exist = const
                 char *constant = expr->token->value;
-                writelnf(out_file, "%s", constant);
+                writelnf(out_file, "mov [rbp - %d], %s", assignee_addr, constant);
             }
         }
     }
