@@ -91,7 +91,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             if (expr->lhs->node_type == ND_VAR) {
                 //init = var +/- ...
                 int addr = stack_addr(symbol_table_get(table, expr->lhs->token)->addr);
-                writelnf(out_file, "rbp - %d", addr);
+                writelnf(out_file, "[rbp - %d]", addr);
             }
             else {
                 //init = const +/- ...
@@ -108,7 +108,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             if (expr->rhs->node_type == ND_VAR) {
                 //init = ... +/- var
                 int addr = stack_addr(symbol_table_get(table, expr->rhs->token)->addr);
-                writelnf(out_file, "rbp - %d", addr);
+                writelnf(out_file, "[rbp - %d]", addr);
             }
             else {
                 //init = ... +/- const
@@ -123,7 +123,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             if (expr->node_type == ND_VAR) {
                 //init = var
                 int addr = stack_addr(symbol_table_get(table, expr->token)->addr);
-                writelnf(out_file, "rbp - %d", addr);
+                writelnf(out_file, "[rbp - %d]", addr);
             }
             else {
                 //init = const
