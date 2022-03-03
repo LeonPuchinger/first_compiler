@@ -73,7 +73,7 @@ void assign_addrs(Symbol_Table *table) {
 //converts "virtual" symbol-table addr to stack addr, relative to rbp
 //relative to rbp means the addr is n bytes lower than rbp
 int stack_addr(int virtual_addr) {
-    return (current_stack_addr_offset + virtual_addr) * REGISTER_SIZE;
+    return (current_stack_addr_offset + 1 + virtual_addr) * REGISTER_SIZE;
 }
 
 int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
