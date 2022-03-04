@@ -7,15 +7,18 @@
 #define INDENT_WIDTH 4
 #define REGISTER_SIZE 8 //64-bit ^= 8 byte
 
+//indentation level for generated code
 static int current_indent = 0;
 //amount of bytes on the stack in addition to vars (e.g. return addrs) in bytes
 static int current_stack_addr_offset = 0;
 
 //varargs style version of writef
-void vwritef(FILE *file, char *fmt, va_list fmt_args) {
-    //indent line
-    for (int i = 0; i < current_indent * INDENT_WIDTH; i++) {
-        fprintf(file, " ");
+void vwritef(FILE *file, int indent, char *fmt, va_list fmt_args) {
+    //indent line if requested
+    if (indent) {
+        for (int i = 0; i < current_indent * INDENT_WIDTH; i++) {
+            fprintf(file, " ");
+        }
     }
     vfprintf(file, fmt, fmt_args);
 }
@@ -24,7 +27,15 @@ void vwritef(FILE *file, char *fmt, va_list fmt_args) {
 void writef(FILE *file, char *fmt, ...) {
     va_list fmt_args;
     va_start(fmt_args, fmt);
-    vwritef(file, fmt, fmt_args);
+    vwritef(file, 1, fmt, fmt_args);
+    va_end(fmt_args);
+}
+
+//like writef, but do not indent
+void writef_ni(FILE *file, char *fmt, ...) {
+    va_list fmt_args;
+    va_start(fmt_args, fmt);
+    vwritef(file, 0, fmt, fmt_args);
     va_end(fmt_args);
 }
 
@@ -32,7 +43,16 @@ void writef(FILE *file, char *fmt, ...) {
 void writelnf(FILE *file, char *fmt, ...) {
     va_list fmt_args;
     va_start(fmt_args, fmt);
-    vwritef(file, fmt, fmt_args);
+    vwritef(file, 1, fmt, fmt_args);
+    va_end(fmt_args);
+    fprintf(file, "\n");
+}
+
+//like writelnf, but do not indent
+void writelnf_ni(FILE *file, char *fmt, ...) {
+    va_list fmt_args;
+    va_start(fmt_args, fmt);
+    vwritef(file, 0, fmt, fmt_args);
     va_end(fmt_args);
     fprintf(file, "\n");
 }
@@ -41,17 +61,16 @@ void write_header(FILE *file) {
     char header[] =
         "section .text\n"
         "global _start\n\n"
-        "_start:\n"
-        "mov rbp, rsp\n";
+        "_start:";
     writelnf(file, header);
+    current_indent += 1;
+    writelnf(file, "mov rbp, rsp\n");
 }
 
 void write_exit(FILE *file) {
-    char exit[] =
-        "mov rax, 60\n"
-        "mov rdi, 0\n"
-        "syscall";
-    writelnf(file, exit);
+    writelnf(file, "mov rax, 60");
+    writelnf(file, "mov rdi, 0");
+    writelnf(file, "syscall");
 }
 
 void _assign_addrs(Scope *scope, int addr_offset) {
@@ -99,12 +118,12 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             if (expr->lhs->node_type == ND_VAR) {
                 //init = var +/- ...
                 int addr = stack_addr(symbol_table_get(table, expr->lhs->token)->addr);
-                writelnf(out_file, "[rbp - %d]", addr);
+                writelnf_ni(out_file, "[rbp - %d]", addr);
             }
             else {
                 //init = const +/- ...
                 char *constant = expr->lhs->token->value;
-                writelnf(out_file, "%s", constant);
+                writelnf_ni(out_file, "%s", constant);
             }
             //write operator
             if (expr->node_type == ND_ADD) {
@@ -116,12 +135,12 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             if (expr->rhs->node_type == ND_VAR) {
                 //init = ... +/- var
                 int addr = stack_addr(symbol_table_get(table, expr->rhs->token)->addr);
-                writelnf(out_file, "[rbp - %d]", addr);
+                writelnf_ni(out_file, "[rbp - %d]", addr);
             }
             else {
                 //init = ... +/- const
                 char *constant = expr->rhs->token->value;
-                writelnf(out_file, "%s", constant);
+                writelnf_ni(out_file, "%s", constant);
             }
             writelnf(out_file, "push rax");
         }
@@ -131,12 +150,12 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             if (expr->node_type == ND_VAR) {
                 //init = var
                 int addr = stack_addr(symbol_table_get(table, expr->token)->addr);
-                writelnf(out_file, "[rbp - %d]", addr);
+                writelnf_ni(out_file, "[rbp - %d]", addr);
             }
             else {
                 //init = const
                 char *constant = expr->token->value;
-                writelnf(out_file, "%s", constant);
+                writelnf_ni(out_file, "%s", constant);
             }
         }
     }
@@ -156,7 +175,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
                     writef(out_file, "sub ");
                 }
                 char *constant2 = expr->rhs->token->value;
-                writelnf(out_file, "[rbp - %d], %s", assignee_addr, constant2);
+                writelnf_ni(out_file, "[rbp - %d], %s", assignee_addr, constant2);
             }
             else {
                 //exist = var +/- var | const +/- var | var +/- const
@@ -164,12 +183,12 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
                 if (expr->lhs->node_type == ND_VAR) {
                     //exist = var +/- ...
                     int addr = stack_addr(symbol_table_get(table, expr->lhs->token)->addr);
-                    writelnf(out_file, "[rbp - %d]", addr);
+                    writelnf_ni(out_file, "[rbp - %d]", addr);
                 }
                 else {
                     //exist = const +/- ...
                     char *constant = expr->lhs->token->value;
-                    writelnf(out_file, "%s", constant);
+                    writelnf_ni(out_file, "%s", constant);
                 }
                 //write operator
                 if (expr->node_type == ND_ADD) {
@@ -178,16 +197,16 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
                 else {
                     writef(out_file, "sub ");
                 }
-                writef(out_file, "rax, ");
+                writef_ni(out_file, "rax, ");
                 if (expr->rhs->node_type == ND_VAR) {
                     //exist = ... +/- var
                     int addr = stack_addr(symbol_table_get(table, expr->rhs->token)->addr);
-                    writelnf(out_file, "[rbp - %d]", addr);
+                    writelnf_ni(out_file, "[rbp - %d]", addr);
                 }
                 else {
                     //exist = ... +/- const
                     char *constant = expr->rhs->token->value;
-                    writelnf(out_file, "%s", constant);
+                    writelnf_ni(out_file, "%s", constant);
                 }
                 //store result
                 writelnf(out_file, "mov [rbp - %d], rax", assignee_addr);
