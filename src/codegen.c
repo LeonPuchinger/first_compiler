@@ -208,6 +208,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             }
         }
     }
+    writef(out_file, "\n");
     return 0;
 }
 
