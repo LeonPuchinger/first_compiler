@@ -46,6 +46,14 @@ void write_header(FILE *file) {
     writelnf(file, header);
 }
 
+void write_exit(FILE *file) {
+    char exit[] =
+        "mov rax, 60\n"
+        "mov rdi, 0\n"
+        "syscall";
+    writelnf(file, exit);
+}
+
 void _assign_addrs(Scope *scope, int addr_offset) {
     //assign addr to each symbol
     Collection_Container *current_sym_cont = scope->symbols->root;
@@ -243,5 +251,9 @@ int codegen(AST_Node *ast_root, Symbol_Table *table, FILE *out_file) {
         return 1;
     }
 
-    return write_statements(ast_root->children, table, out_file);
+    int err = write_statements(ast_root->children, table, out_file);
+    if (err) return err;
+
+    write_exit(out_file);
+    return 0;
 }
