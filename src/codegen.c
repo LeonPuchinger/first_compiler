@@ -134,36 +134,55 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
     }
     else {
         int assignee_addr = stack_addr(symbol_table_get(table, assignee->token)->addr);
-        writef(out_file, "mov rbp - %d, ", assignee_addr);
         if (is_composite) {
             //exist = a +/- b
-            if (expr->lhs->node_type == ND_VAR) {
-                //exist = var +/- ...
-                int addr = stack_addr(symbol_table_get(table, expr->lhs->token)->addr);
-                writelnf(out_file, "rbp - %d", addr);
+            if (expr->lhs->node_type == ND_INT && expr->rhs->node_type == ND_INT) {
+                //exist = const +/- const
+                char *constant1 = expr->lhs->token->value;
+                writelnf(out_file, "mov [rbp - %d], %s", assignee_addr, constant1);
+                //write operator
+                if (expr->node_type == ND_ADD) {
+                    writef(out_file, "add ");
+                }
+                else {
+                    writef(out_file, "sub ");
+                }
+                char *constant2 = expr->rhs->token->value;
+                writelnf(out_file, "[rbp - %d], %s", assignee_addr, constant2);
             }
             else {
-                //exist const +/- ...
-                char *constant = expr->lhs->token->value;
-                writelnf(out_file, "%s", constant);
-            }
-            //write operator
-            if (expr->node_type == ND_ADD) {
-                writef(out_file, "add ");
-            }
-            else {
-                writef(out_file, "sub ");
-            }
-            writef(out_file, "rbp - %d, ", assignee_addr);
-            if (expr->rhs->node_type == ND_VAR) {
-                //exist = ... +/- var
-                int addr = stack_addr(symbol_table_get(table, expr->rhs->token)->addr);
-                writelnf(out_file, "rpb - %d", addr);
-            }
-            else {
-                //exist = ... +/- const
-                char *constant = expr->rhs->token->value;
-                writelnf(out_file, "%s", constant);
+                //exist = var +/- var | const +/- var | var +/- const
+                writef(out_file, "mov rax, ");
+                if (expr->lhs->node_type == ND_VAR) {
+                    //exist = var +/- ...
+                    int addr = stack_addr(symbol_table_get(table, expr->lhs->token)->addr);
+                    writelnf(out_file, "[rbp - %d]", addr);
+                }
+                else {
+                    //exist = const +/- ...
+                    char *constant = expr->lhs->token->value;
+                    writelnf(out_file, "%s", constant);
+                }
+                //write operator
+                if (expr->node_type == ND_ADD) {
+                    writef(out_file, "add ");
+                }
+                else {
+                    writef(out_file, "sub ");
+                }
+                writef(out_file, "rax, ");
+                if (expr->rhs->node_type == ND_VAR) {
+                    //exist = ... +/- var
+                    int addr = stack_addr(symbol_table_get(table, expr->rhs->token)->addr);
+                    writelnf(out_file, "[rbp - %d]", addr);
+                }
+                else {
+                    //exist = ... +/- const
+                    char *constant = expr->rhs->token->value;
+                    writelnf(out_file, "%s", constant);
+                }
+                //store result
+                writelnf(out_file, "mov [rbp - %d], rax", assignee_addr);
             }
         }
         else {
