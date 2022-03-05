@@ -252,6 +252,8 @@ int write_function_def(AST_Node *function_def, Symbol_Table *table, FILE *out_fi
 }
 
 int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) {
+    //used to keep track of which symbol table child scope is needed when writing function def
+    int function_def_index = 0;
     AST_Node *current_statement = statements;
     while (current_statement != NULL) {
         if (current_statement->node_type == ND_ASSIGN) {
@@ -259,8 +261,14 @@ int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) 
             if (err) return 1;
         }
         else if (current_statement->node_type == ND_FUNCTION_DEF) {
+            symbol_table_walk_child(table);
+            for (int i = 0; i < function_def_index; i++) {
+                symbol_table_walk_next(table);
+            }
             int err = write_function_def(current_statement, table, out_file);
             if (err) return 1;
+            symbol_table_pop(table);
+            function_def_index += 1;
         }
         else if (current_statement->node_type == ND_FUNCTION_CALL) {
             //TODO write func call
