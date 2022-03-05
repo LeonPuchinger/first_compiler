@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include "codegen.h"
 #include "parser.h"
@@ -104,7 +105,7 @@ int stack_addr(int virtual_addr) {
     return (current_stack_addr_offset + 1 + virtual_addr) * REGISTER_SIZE;
 }
 
-int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file);
+int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file, FILE *func_buffer);
 
 int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
     AST_Node *assignee = assignment->lhs;
@@ -242,7 +243,7 @@ int write_function_def(AST_Node *function_def, Symbol_Table *table, FILE *out_fi
     if (function_def->children == NULL) {
         writelnf(out_file, "nop");
     } else {
-        int err = write_statements(function_def->children, table, out_file);
+        int err = write_statements(function_def->children, table, out_file, out_file);
         if (err) return 1;
     }
     writelnf(out_file, "ret\n");
@@ -251,7 +252,7 @@ int write_function_def(AST_Node *function_def, Symbol_Table *table, FILE *out_fi
     return 0;
 }
 
-int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) {
+int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file, FILE *func_buffer) {
     //used to keep track of which symbol table child scope is needed when writing function def
     int function_def_index = 0;
     AST_Node *current_statement = statements;
@@ -265,7 +266,7 @@ int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) 
             for (int i = 0; i < function_def_index; i++) {
                 symbol_table_walk_next(table);
             }
-            int err = write_function_def(current_statement, table, out_file);
+            int err = write_function_def(current_statement, table, func_buffer);
             if (err) return 1;
             symbol_table_pop(table);
             function_def_index += 1;
@@ -298,9 +299,28 @@ int codegen(AST_Node *ast_root, Symbol_Table *table, FILE *out_file) {
         return 1;
     }
 
-    int err = write_statements(ast_root->children, table, out_file);
+    //write function definitions to buffer so they can be appended to the actual output file
+    char *func_buffer_file_path = "out/function_buffer.asm";
+    FILE *func_buffer_file = fopen(func_buffer_file_path, "w+");
+
+    int err = write_statements(ast_root->children, table, out_file, func_buffer_file);
     if (err) return err;
 
     write_exit(out_file);
+
+    fseek(func_buffer_file, 0, SEEK_END);
+    int file_size = ftell(func_buffer_file);
+    if (file_size > 0) {
+        rewind(func_buffer_file);
+        char *function_buffer = malloc(file_size);
+        fread(function_buffer, file_size, sizeof(char), func_buffer_file);
+        fprintf(out_file, "\n%s", function_buffer);
+    }
+    fclose(func_buffer_file);
+    err = remove(func_buffer_file_path);
+    if (err) {
+        printf("WARNING: could not remove temporary file %s\n", func_buffer_file_path);
+    }
+
     return 0;
 }
