@@ -104,12 +104,16 @@ int stack_addr(int virtual_addr) {
     return (current_stack_addr_offset + 1 + virtual_addr) * REGISTER_SIZE;
 }
 
+int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file);
+
 int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
     AST_Node *assignee = assignment->lhs;
     AST_Node *expr = assignment->rhs;
     Symbol *assignee_sym = symbol_table_is_local(table, assignee->token);
     int is_initial_assign = assignee_sym != NULL && !assignee_sym->initialized;
-    assignee_sym->initialized = 1;
+    if (is_initial_assign) {
+        assignee_sym->initialized = 1;
+    }
     int is_composite = expr->node_type == ND_ADD || expr->node_type == ND_SUB;
     if (is_initial_assign) {
         if (is_composite) {
@@ -231,6 +235,22 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
     return 0;
 }
 
+int write_function_def(AST_Node *function_def, Symbol_Table *table, FILE *out_file) {
+    writelnf(out_file, "%s:", function_def->token->value);
+    current_indent += 1;
+    current_stack_addr_offset += 1;
+    if (function_def->children == NULL) {
+        writelnf(out_file, "nop");
+    } else {
+        int err = write_statements(function_def->children, table, out_file);
+        if (err) return 1;
+    }
+    writelnf(out_file, "ret\n");
+    current_indent -= 1;
+    current_stack_addr_offset -= 1;
+    return 0;
+}
+
 int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) {
     AST_Node *current_statement = statements;
     while (current_statement != NULL) {
@@ -239,9 +259,8 @@ int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) 
             if (err) return 1;
         }
         else if (current_statement->node_type == ND_FUNCTION_DEF) {
-            //TODO write func def
-            printf("NOT IMPLEMENTED\n");
-            return 1;
+            int err = write_function_def(current_statement, table, out_file);
+            if (err) return 1;
         }
         else if (current_statement->node_type == ND_FUNCTION_CALL) {
             //TODO write func call
