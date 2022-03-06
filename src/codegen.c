@@ -87,11 +87,10 @@ void _assign_addrs(Scope *scope, int addr_offset) {
     Collection_Container *current_sym_cont = scope->symbols->root;
     while (current_sym_cont != NULL) {
         Symbol *current_symbol = current_sym_cont->item;
-        //only assign addr to actual vars
-        if (current_symbol->type != SYM_FUNC) {
-            current_symbol->addr = addr_offset;
-            addr_offset += 1;
-        }
+        //assign memory address to actual vars, but also
+        //assign memory address to functions (to store stack pointer at the beginning of the function)
+        current_symbol->addr = addr_offset;
+        addr_offset += 1;
         current_sym_cont = current_sym_cont->next;
     }
     //repeat for every child scope, but start addresses at offset
@@ -253,8 +252,11 @@ int write_function_def(AST_Node *function_def, Symbol_Table *table) {
         writelnf(out_file, "nop");
     }
     else {
+        writelnf(out_file, "push rsp");
         int err = write_statements(function_def->children, table, out_file);
         if (err) return 1;
+        int addr = stack_addr(symbol_table_get(table, function_def->token)->addr);
+        writelnf(out_file, "mov rsp, [rbp - %d]", addr);
     }
     writelnf(out_file, "ret\n");
     current_stack_addr_offset -= 1;
