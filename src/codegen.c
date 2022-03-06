@@ -308,6 +308,7 @@ int merge_func_buffers(FILE *out_file) {
         return 1;
     }
     //list all files in func buffer dir
+    fprintf(out_file, "\n");
     while ((dirent = readdir(dir)) != NULL) {
         //check if actually a file
         if (dirent->d_type == DT_REG) {
@@ -320,7 +321,7 @@ int merge_func_buffers(FILE *out_file) {
                 rewind(func_buffer_file);
                 char *function_buffer = calloc(file_size + 1, sizeof(char));
                 fread(function_buffer, file_size, sizeof(char), func_buffer_file);
-                fprintf(out_file, "\n%s", function_buffer);
+                fprintf(out_file, "%s", function_buffer);
             }
             fclose(func_buffer_file);
             int err = remove(func_buffer_file_path);
