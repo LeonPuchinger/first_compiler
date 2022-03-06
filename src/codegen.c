@@ -365,7 +365,7 @@ int codegen(AST_Node *ast_root, Symbol_Table *table, FILE *out_file) {
 
     write_exit(out_file);
 
-    int err = merge_func_buffers(out_file);
+    err = merge_func_buffers(out_file);
     if (err) return err;
 
     return 0;
