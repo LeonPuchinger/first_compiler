@@ -262,6 +262,10 @@ int write_function_def(AST_Node *function_def, Symbol_Table *table) {
     return 0;
 }
 
+void write_function_call(AST_Node *function_call, FILE *out_file) {
+    writelnf(out_file, "call %s\n", function_call->token->value);
+}
+
 int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) {
     //used to keep track of which symbol table child scope is needed when writing function def
     int function_def_index = 0;
@@ -282,9 +286,7 @@ int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) 
             function_def_index += 1;
         }
         else if (current_statement->node_type == ND_FUNCTION_CALL) {
-            //TODO write func call
-            printf("NOT IMPLEMENTED\n");
-            return 1;
+            write_function_call(current_statement, out_file);
         }
         else {
             printf("ERROR: AST_Node is not a statement\n");
