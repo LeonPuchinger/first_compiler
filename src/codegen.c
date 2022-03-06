@@ -72,7 +72,7 @@ void write_header(FILE *file) {
         "section .text\n"
         "global _start\n\n"
         "_start:";
-    writelnf(file, header);
+    writelnf_ni(file, header);
     writelnf(file, "mov rbp, rsp\n");
 }
 
@@ -247,7 +247,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
 int write_function_def(AST_Node *function_def, Symbol_Table *table) {
     FILE *out_file = fopen(comb_str(comb_str(FUNC_BUFFERS_PATH, "/"), function_def->token->value), "w+");
 
-    writelnf(out_file, "%s:", function_def->token->value);
+    writelnf_ni(out_file, "%s:", function_def->token->value);
     current_stack_addr_offset += 1;
     if (function_def->children == NULL) {
         writelnf(out_file, "nop");
