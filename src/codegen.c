@@ -12,8 +12,6 @@
 #define REGISTER_SIZE 8 //64-bit ^= 8 byte
 #define FUNC_BUFFERS_PATH "out/func_buffers"
 
-//indentation level for generated code
-static int current_indent = 0;
 //amount of bytes on the stack in addition to vars (e.g. return addrs) in bytes
 static int current_stack_addr_offset = 0;
 
@@ -21,7 +19,7 @@ static int current_stack_addr_offset = 0;
 void vwritef(FILE *file, int indent_enabled, char *fmt, va_list fmt_args) {
     //indent line if requested
     if (indent_enabled) {
-        for (int i = 0; i < current_indent * INDENT_WIDTH; i++) {
+        for (int i = 0; i < INDENT_WIDTH; i++) {
             fprintf(file, " ");
         }
     }
@@ -75,7 +73,6 @@ void write_header(FILE *file) {
         "global _start\n\n"
         "_start:";
     writelnf(file, header);
-    current_indent += 1;
     writelnf(file, "mov rbp, rsp\n");
 }
 
@@ -251,7 +248,6 @@ int write_function_def(AST_Node *function_def, Symbol_Table *table) {
     FILE *out_file = fopen(comb_str(comb_str(FUNC_BUFFERS_PATH, "/"), function_def->token->value), "w+");
 
     writelnf(out_file, "%s:", function_def->token->value);
-    current_indent += 1;
     current_stack_addr_offset += 1;
     if (function_def->children == NULL) {
         writelnf(out_file, "nop");
@@ -261,7 +257,6 @@ int write_function_def(AST_Node *function_def, Symbol_Table *table) {
         if (err) return 1;
     }
     writelnf(out_file, "ret\n");
-    current_indent -= 1;
     current_stack_addr_offset -= 1;
     fclose(out_file);
     return 0;
