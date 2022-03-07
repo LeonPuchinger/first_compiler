@@ -136,7 +136,7 @@ AST_Node *assignment(Token_List *tokens) {
 
     //equal sign
     Token *equ_token = token_list_current(tokens);
-    if (equ_token == NULL || equ_token->type != TK_EQU) {
+    if (equ_token == NULL || equ_token->type != TK_ASSIGN) {
         token_list_rewind(tokens, 1);
         return NULL;
     }

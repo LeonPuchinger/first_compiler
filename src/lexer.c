@@ -259,7 +259,7 @@ int tokenize(char *text, int size, Token_List *tokens) {
         if (cmp(text, strl("="))) {
             text += 1;
             i += 1;
-            Token *new = new_token(TK_EQU, strl("="));
+            Token *new = new_token(TK_ASSIGN, strl("="));
             token_list_add(tokens, new);
             continue;
         }
