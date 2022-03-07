@@ -97,3 +97,9 @@ $ make run_tests
         }
     }
     ```
+
+## additional notes
+
+- compilers are short lived programs, which is why this one (like a lot of other compilers) does not free memory.
+i made this decision during the project however, which is why earlier compiler steps still free memory or offer functions to do so.
+- inspired by https://github.com/rui314/chibicc

@@ -58,10 +58,6 @@ int main(int argc, char **argv) {
     }
     fclose(asm_file);
 
-    //TODO free AST, Symbol Table
-    free_token_list(tokens);
-    free(text);
-
     system("nasm -o out/out.o -f elf64 out/out.asm");
     system("ld -o out/out out/out.o");
 
