@@ -42,6 +42,7 @@ $ make run_tests
 - conditions
 - a way to print values
 - a few optimizations in the generated code
+- better error handling
 
 ## limitations
 
@@ -73,6 +74,7 @@ $ make run_tests
             counter = counter - 1
         }
         //do loop stuff with counter...
+        loop()
     }
     loop()
     ```
