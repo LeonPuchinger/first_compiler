@@ -22,13 +22,6 @@ int main(int argc, char **argv) {
         }
     }
 
-    /* FILE *asm_file = fopen("out/out.asm", "w");
-    fprintf(asm_file, "assembly output");
-    fclose(asm_file);
-
-    system("nasm -o out/out.o -f elf64 out/out.asm");
-    system("ld -o out/out out/out.o"); */
-
     FILE *file = fopen(argv[1], "r");
     fseek(file, 0, SEEK_END);
     int file_size = ftell(file);
@@ -68,5 +61,9 @@ int main(int argc, char **argv) {
     //TODO free AST, Symbol Table
     free_token_list(tokens);
     free(text);
-    return err;
+
+    system("nasm -o out/out.o -f elf64 out/out.asm");
+    system("ld -o out/out out/out.o");
+
+    return 0;
 }
