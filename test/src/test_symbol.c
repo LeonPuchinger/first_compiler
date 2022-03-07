@@ -166,13 +166,13 @@ int test_symbol_table_is_local() {
 
     //child scope
     int is_local = 0;
-    is_local = symbol_table_is_local(table, symbol_ident("c")->name);
+    is_local = symbol_table_is_local(table, symbol_ident("c")->name) != NULL;
     err = assert_int_not(is_local, 0);
     if (err) return err;
 
     //root scope
     symbol_table_reset_current(table);
-    is_local = symbol_table_is_local(table, symbol_ident("a")->name);
+    is_local = symbol_table_is_local(table, symbol_ident("a")->name) != NULL;
     err = assert_int_not(is_local, 0);
     if (err) return err;
 
