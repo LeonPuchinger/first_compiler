@@ -298,6 +298,22 @@ int tokenize(char *text, int size, Token_List *tokens) {
             continue;
         }
 
+        if (cmp(text, strl("=="))) {
+            text += 2;
+            i += 2;
+            Token *new = new_token(TK_EQU, strl("=="));
+            token_list_add(tokens, new);
+            continue;
+        }
+
+        if (cmp(text, strl("!="))) {
+            text += 2;
+            i += 2;
+            Token *new = new_token(TK_NON_EQU, strl("!="));
+            token_list_add(tokens, new);
+            continue;
+        }
+
         //number literal
         int num_lit_size = read_num_literal(text, size - i);
         if (num_lit_size > 0) {
