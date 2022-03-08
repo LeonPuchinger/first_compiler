@@ -222,6 +222,24 @@ int tokenize(char *text, int size, Token_List *tokens) {
             continue;
         }
 
+        //if keyword
+        if (cmp(text, strl("if"))) {
+            text += strsize("if");
+            i += strsize("if");
+            Token *new = new_token(TK_IF_KW, strl("if"));
+            token_list_add(tokens, new);
+            continue;
+        }
+
+        //else keyword
+        if (cmp(text, strl("else"))) {
+            text += strsize("else");
+            i += strsize("else");
+            Token *new = new_token(TK_ELSE_KW, strl("else"));
+            token_list_add(tokens, new);
+            continue;
+        }
+
         //braces
         if (cmp(text, strl("{"))) {
             text += 1;
