@@ -7,6 +7,7 @@ AST_Node *new_ast_node(Token *token, AST_Node_Type type) {
     AST_Node *new = malloc(sizeof(AST_Node));
     new->lhs = NULL;
     new->rhs = NULL;
+    new->ms = NULL;
     new->children = NULL;
     new->next = NULL;
     new->node_type = type;
