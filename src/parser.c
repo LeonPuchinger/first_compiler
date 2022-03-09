@@ -211,6 +211,51 @@ AST_Node *function(Token_List *tokens) {
     return function;
 }
 
+//boolean = summand "==" summand | summand "!=" summand
+AST_Node *boolean(Token_List *tokens) {
+    //return to this token if production can't be matched
+    Token_List_Node *token_reset = tokens->current;
+
+    //first summand
+    AST_Node *s1 = summand(tokens);
+    if (s1 == NULL) return NULL;
+
+    //operand
+    Token *token = token_list_current(tokens);
+    AST_Node *op;
+    if (token == NULL) {
+        tokens->current = token_reset;
+        free_ast_node(s1);
+        return NULL;
+    }
+    if (token->type == TK_EQU) {
+        op = new_ast_node(token, ND_BOOLEAN);
+    }
+    else if (token->type == TK_NON_EQU) {
+        op = new_ast_node(token, ND_BOOLEAN);
+    }
+    else {
+        tokens->current = token_reset;
+        free_ast_node(s1);
+        return NULL;
+    }
+
+    token_list_forward(tokens);
+
+    //second summand
+    AST_Node *s2 = summand(tokens);
+    if (s2 == NULL) {
+        tokens->current = token_reset;
+        free_ast_node(s1);
+        free_ast_node(op);
+        return NULL;
+    }
+    op->lhs = s1;
+    op->rhs = s2;
+    op->lhs->next = op->rhs;
+    return op;
+}
+
 //statement = assignment | call | function
 AST_Node *statement(Token_List *tokens) {
     AST_Node *node = assignment(tokens);

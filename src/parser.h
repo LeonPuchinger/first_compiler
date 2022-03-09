@@ -4,7 +4,7 @@
 #include "lexer.h"
 
 typedef enum {
-    ND_ROOT, ND_FUNCTION_DEF, ND_FUNCTION_CALL, ND_ASSIGN, ND_INT, ND_VAR, ND_ADD, ND_SUB
+    ND_ROOT, ND_FUNCTION_DEF, ND_FUNCTION_CALL, ND_BOOLEAN, ND_ASSIGN, ND_INT, ND_VAR, ND_ADD, ND_SUB
 } AST_Node_Type;
 
 typedef struct AST_Node {
@@ -12,7 +12,7 @@ typedef struct AST_Node {
     Token *token;
 
     //binary AST node
-    //used for: assignment, addition, subtraction
+    //used for: assignment, boolean, addition, subtraction
     struct AST_Node *lhs, *rhs;
 
     //n-ary AST node
