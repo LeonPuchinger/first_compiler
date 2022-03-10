@@ -289,6 +289,127 @@ AST_Node *boolean(Token_List *tokens) {
     return op;
 }
 
+//condition = "if" "(" boolean ")" "{" {statement} "}" [else "{" {statement} "}"]
+AST_Node *condition(Token_List *tokens) {
+    //return to this token if production can't be matched
+    Token_List_Node *token_reset = tokens->current;
+
+    //if keyword
+    Token *token = token_list_current(tokens);
+    if (token == NULL || token->type != TK_IF_KW) {
+        return NULL;
+    }
+    token_list_forward(tokens);
+
+    //open parenthesis
+    token = token_list_current(tokens);
+    if (token == NULL || token->type != TK_OPEN_PAREN) {
+        tokens->current = token_reset;
+        return NULL;
+    }
+    token_list_forward(tokens);
+
+    //actual condition/boolean
+    AST_Node *bool = boolean(tokens);
+    if (bool == NULL) {
+        tokens->current = token_reset;
+        return NULL;
+    }
+
+    //close parenthesis
+    token = token_list_current(tokens);
+    if (token == NULL || token->type != TK_CLOSE_PAREN) {
+        tokens->current = token_reset;
+        free_ast_node_recursive(bool);
+        return NULL;
+    }
+    token_list_forward(tokens);
+
+    //open brace
+    token = token_list_current(tokens);
+    if (token == NULL || token->type != TK_OPEN_BRACE) {
+        tokens->current = token_reset;
+        free_ast_node_recursive(bool);
+        return NULL;
+    }
+    token_list_forward(tokens);
+
+    //statements
+    AST_Node *statements_if = NULL, *current_statement_if = NULL, *new_statement_if = NULL;
+    while ((new_statement_if = statement(tokens)) != NULL) {
+        if (statements_if == NULL) {
+            statements_if = new_statement_if;
+            current_statement_if = new_statement_if;
+        }
+        else {
+            current_statement_if->next = new_statement_if;
+            current_statement_if = new_statement_if;
+        }
+    }
+
+    //close brace
+    token = token_list_current(tokens);
+    if (token == NULL || token->type != TK_CLOSE_BRACE) {
+        tokens->current = token_reset;
+        free_ast_node_recursive(bool);
+        free_ast_node_list_recursive(statements_if);
+        return NULL;
+    }
+    token_list_forward(tokens);
+
+    //if else cannot be matched, reset to still valid if match
+    token_reset = tokens->current;
+
+    AST_Node *cond = new_ast_node(NULL, ND_COND);
+    AST_Node *cond_true = new_ast_node(NULL, ND_COND_TRUE);
+    cond_true->children = statements_if;
+    cond->lhs = cond_true;
+    cond->ms = bool;
+
+    //else keyword
+    token = token_list_current(tokens);
+    if (token == NULL || token->type != TK_ELSE_KW) {
+        tokens->current = token_reset;
+        return cond;
+    }
+
+    //open brace
+    token = token_list_current(tokens);
+    if (token == NULL || token->type != TK_OPEN_BRACE) {
+        tokens->current = token_reset;
+        return cond;
+    }
+    token_list_forward(tokens);
+
+    //statements
+    AST_Node *statements_else = NULL, *current_statement_else = NULL, *new_statement_else = NULL;
+    while ((new_statement_else = statement(tokens)) != NULL) {
+        if (statements_else == NULL) {
+            statements_else = new_statement_else;
+            current_statement_else = new_statement_else;
+        }
+        else {
+            current_statement_else->next = new_statement_else;
+            current_statement_else = new_statement_else;
+        }
+    }
+
+    //close brace
+    token = token_list_current(tokens);
+    if (token == NULL || token->type != TK_CLOSE_BRACE) {
+        tokens->current = token_reset;
+        free_ast_node_list_recursive(statements_else);
+        return cond;
+    }
+    token_list_forward(tokens);
+
+    AST_Node *cond_false = new_ast_node(NULL, ND_COND_FALSE);
+    cond_false->children = statements_else;
+    cond->rhs = cond_false;
+
+    return cond;
+}
+
 //statement = assignment | call | function
 AST_Node *statement(Token_List *tokens) {
     AST_Node *node = assignment(tokens);
