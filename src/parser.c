@@ -234,7 +234,7 @@ AST_Node *function(Token_List *tokens) {
     token = token_list_current(tokens);
     if (token == NULL || token->type != TK_CLOSE_BRACE) {
         tokens->current = token_reset; //cannot rewind a known distance because statement count is unknown at compile time
-        free_ast_node_list(statements);
+        free_ast_node_list_recursive(statements);
         return NULL;
     }
     token_list_forward(tokens);
