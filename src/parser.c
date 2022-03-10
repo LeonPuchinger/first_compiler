@@ -410,7 +410,7 @@ AST_Node *condition(Token_List *tokens) {
     return cond;
 }
 
-//statement = assignment | call | function
+//statement = assignment | call | function | condition
 AST_Node *statement(Token_List *tokens) {
     AST_Node *node = assignment(tokens);
     if (node != NULL) {
@@ -422,7 +422,12 @@ AST_Node *statement(Token_List *tokens) {
         return node;
     }
 
-    return function(tokens);
+    node = function(tokens);
+    if (node != NULL) {
+        return node;
+    }
+
+    return condition(tokens);
 }
 
 //S = { statement }
