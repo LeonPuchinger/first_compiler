@@ -16,13 +16,39 @@ AST_Node *new_ast_node(Token *token, AST_Node_Type type) {
 }
 
 void free_ast_node(AST_Node *node) {
-    free(node);
+    if (node != NULL) {
+        free(node);
+    }
+}
+
+void free_ast_node_recursive(AST_Node *node) {
+    if (node->lhs != NULL) {
+        free_ast_node_recursive(node->lhs);
+    }
+    if (node->ms != NULL) {
+        free_ast_node_recursive(node->ms);
+    }
+    if (node->rhs != NULL) {
+        free_ast_node_recursive(node->rhs);
+    }
+    if (node->children != NULL) {
+        free_ast_node_list_recursive(node->children);
+    }
+    free_ast_node(node);
 }
 
 void free_ast_node_list(AST_Node *node) {
     while (node != NULL) {
         AST_Node *next = node->next;
         free_ast_node(node);
+        node = next;
+    }
+}
+
+void free_ast_node_list_recursive(AST_Node *node) {
+    while (node != NULL) {
+        AST_Node *next = node->next;
+        free_ast_node_recursive(node);
         node = next;
     }
 }

@@ -34,6 +34,12 @@ AST_Node *new_ast_node(Token *token, AST_Node_Type type);
 
 void free_ast_node(AST_Node *node);
 
+void free_ast_node_recursive(AST_Node *node);
+
+void free_ast_node_list(AST_Node *node);
+
+void free_ast_node_list_recursive(AST_Node *node);
+
 void ast_node_add_child(AST_Node *parent, AST_Node *new_child);
 
 AST_Node *parse(Token_List *tokens);
