@@ -372,6 +372,7 @@ AST_Node *condition(Token_List *tokens) {
         tokens->current = token_reset;
         return cond;
     }
+    token_list_forward(tokens);
 
     //open brace
     token = token_list_current(tokens);
