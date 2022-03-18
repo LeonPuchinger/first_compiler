@@ -274,6 +274,24 @@ int tokenize(char *text, int size, Token_List *tokens) {
         }
 
         //operators
+
+        //check "==" before "=", so "=" is not matched twice
+        if (cmp(text, strl("=="))) {
+            text += 2;
+            i += 2;
+            Token *new = new_token(TK_EQU, strl("=="));
+            token_list_add(tokens, new);
+            continue;
+        }
+
+        if (cmp(text, strl("!="))) {
+            text += 2;
+            i += 2;
+            Token *new = new_token(TK_NON_EQU, strl("!="));
+            token_list_add(tokens, new);
+            continue;
+        }
+
         if (cmp(text, strl("="))) {
             text += 1;
             i += 1;
@@ -294,22 +312,6 @@ int tokenize(char *text, int size, Token_List *tokens) {
             text += 1;
             i += 1;
             Token *new = new_token(TK_SUB, strl("-"));
-            token_list_add(tokens, new);
-            continue;
-        }
-
-        if (cmp(text, strl("=="))) {
-            text += 2;
-            i += 2;
-            Token *new = new_token(TK_EQU, strl("=="));
-            token_list_add(tokens, new);
-            continue;
-        }
-
-        if (cmp(text, strl("!="))) {
-            text += 2;
-            i += 2;
-            Token *new = new_token(TK_NON_EQU, strl("!="));
             token_list_add(tokens, new);
             continue;
         }
