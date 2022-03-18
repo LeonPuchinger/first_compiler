@@ -268,6 +268,36 @@ void write_function_call(AST_Node *function_call, FILE *out_file) {
     writelnf(out_file, "call %s\n", function_call->token->value);
 }
 
+void write_boolean(AST_Node *boolean, Symbol_Table *table, FILE *out_file) {
+    AST_Node *lhs = boolean->lhs;
+    AST_Node *rhs = boolean->rhs;
+    if (lhs->node_type == ND_INT && rhs->node_type == ND_INT) {
+        char *constant1 = lhs->token->value;
+        writelnf(out_file, "mov rax, %s", constant1);
+        char *constant2 = rhs->token->value;
+        writelnf(out_file, "mov rbx, %s", constant2);
+        writelnf(out_file, "cmp rax, rbx");
+    }
+    else if (lhs->node_type == ND_VAR && rhs->node_type == ND_INT) {
+        char *constant = rhs->token->value;
+        writelnf(out_file, "mov rax, %s", constant);
+        int addr = symbol_table_get(table, lhs->token)->addr;
+        writelnf(out_file, "cmp [rbp - %d], rax", addr);
+    }
+    else if (lhs->node_type == ND_INT && rhs->node_type == ND_VAR) {
+        char *constant = lhs->token->value;
+        writelnf(out_file, "mov rax, %s", constant);
+        int addr = symbol_table_get(table, rhs->token)->addr;
+        writelnf(out_file, "cmp [rbp - %d], rax", addr);
+    }
+    else {
+        int addr1 = symbol_table_get(table, lhs->token)->addr;
+        int addr2 = symbol_table_get(table, rhs->token)->addr;
+        writelnf(out_file, "mov rax, [rbp - %d]", addr1);
+        writelnf(out_file, "cmp rax, [rbp - %d]", addr2);
+    }
+}
+
 int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) {
     //used to keep track of which symbol table child scope is needed when writing function def
     int function_def_index = 0;
