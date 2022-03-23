@@ -298,6 +298,26 @@ void write_boolean(AST_Node *boolean, Symbol_Table *table, FILE *out_file) {
     }
 }
 
+void write_condition(AST_Node *condition, Symbol_Table *table, FILE *out_file) {
+    write_boolean(condition->ms, table, out_file);
+    if (condition->ms->token->type == TK_EQU) {
+        writelnf(out_file, "jne else"); //TODO name scramble
+    }
+    else {
+        writelnf(out_file, "je else"); //TODO name scramble
+    }
+    writef(out_file, "\n");
+    //write statements of 'true-case'
+    write_statements(condition->lhs->children, table, out_file);
+    writelnf(out_file, "jmp end"); //TODO name scramble
+
+    writef(out_file, "\n");
+    writelnf(out_file, "else:\n"); //TODO name scramble
+    //write statements of 'false-case'
+    write_statements(condition->rhs->children, table, out_file);
+    writelnf(out_file, "end:\n"); //TODO name scramble
+}
+
 int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) {
     //used to keep track of which symbol table child scope is needed when writing function def
     int function_def_index = 0;
@@ -319,6 +339,9 @@ int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) 
         }
         else if (current_statement->node_type == ND_FUNCTION_CALL) {
             write_function_call(current_statement, out_file);
+        }
+        else if (current_statement->node_type == ND_COND) {
+            write_condition(current_statement, table, out_file);
         }
         else {
             printf("ERROR: AST_Node is not a statement\n");
