@@ -298,7 +298,7 @@ void write_boolean(AST_Node *boolean, Symbol_Table *table, FILE *out_file) {
     }
 }
 
-void write_condition(AST_Node *condition, Symbol_Table *table, FILE *out_file) {
+void write_condition(AST_Node *condition, Symbol_Table *table, FILE *out_file, int *scope_index) {
     write_boolean(condition->ms, table, out_file);
     if (condition->ms->token->type == TK_EQU) {
         writelnf(out_file, "jne else"); //TODO name scramble
@@ -307,20 +307,35 @@ void write_condition(AST_Node *condition, Symbol_Table *table, FILE *out_file) {
         writelnf(out_file, "je else"); //TODO name scramble
     }
     writef(out_file, "\n");
+
+    //set correct scope
+    symbol_table_walk_child(table);
+    for (int i = 0; i < *scope_index; i++) {
+        symbol_table_walk_next(table);
+    }
+    *scope_index += 1;
+
     //write statements of 'true-case'
     write_statements(condition->lhs->children, table, out_file);
     writelnf(out_file, "jmp end"); //TODO name scramble
 
-    writef(out_file, "\n");
-    writelnf(out_file, "else:\n"); //TODO name scramble
-    //write statements of 'false-case'
-    write_statements(condition->rhs->children, table, out_file);
-    writelnf(out_file, "end:\n"); //TODO name scramble
+    if (condition->rhs != NULL) {
+        symbol_table_walk_next(table);
+        *scope_index += 1;
+
+        writef(out_file, "\n");
+        writelnf(out_file, "else:\n"); //TODO name scramble
+        //write statements of 'false-case'
+        write_statements(condition->rhs->children, table, out_file);
+        writelnf(out_file, "end:\n"); //TODO name scramble
+    }
+
+    symbol_table_pop(table);
 }
 
 int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) {
-    //used to keep track of which symbol table child scope is needed when writing function def
-    int function_def_index = 0;
+    //used to keep track of which symbol table child scope is needed when writing function defs or conditions
+    int scope_index = 0;
     AST_Node *current_statement = statements;
     while (current_statement != NULL) {
         if (current_statement->node_type == ND_ASSIGN) {
@@ -329,19 +344,21 @@ int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) 
         }
         else if (current_statement->node_type == ND_FUNCTION_DEF) {
             symbol_table_walk_child(table);
-            for (int i = 0; i < function_def_index; i++) {
+            for (int i = 0; i < scope_index; i++) {
                 symbol_table_walk_next(table);
             }
             int err = write_function_def(current_statement, table);
             if (err) return 1;
             symbol_table_pop(table);
-            function_def_index += 1;
+            scope_index += 1;
         }
         else if (current_statement->node_type == ND_FUNCTION_CALL) {
             write_function_call(current_statement, out_file);
         }
         else if (current_statement->node_type == ND_COND) {
-            write_condition(current_statement, table, out_file);
+            //need to pass scope_index into the function, because the child scope needs to be set after the boolean is analyzed
+            //and the scope needs to change one additional time if the condition has an 'else case'
+            write_condition(current_statement, table, out_file, &scope_index);
         }
         else {
             printf("ERROR: AST_Node is not a statement\n");
