@@ -32,6 +32,12 @@ int check_symbols(AST_Node *statement, Symbol_Table *table) {
                 return 1;
             }
         }
+        else if (statement->node_type == ND_BOOLEAN) {
+            err = check_symbols(statement->lhs, table);
+            if (err) return err;
+            err = check_symbols(statement->rhs, table);
+            if (err) return err;
+        }
         else if (statement->node_type == ND_ASSIGN) {
             //rhs of assign needs to be check first
             //this way, a variable can't be assigned to itself during its initial assignment
