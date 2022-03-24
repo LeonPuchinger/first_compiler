@@ -93,6 +93,11 @@ void _assign_addrs(Scope *scope, int addr_offset) {
         //assign memory address to functions (to store stack pointer at the beginning of the function)
         current_symbol->addr = addr_offset;
         addr_offset += 1;
+        //also set mangle index for function symbols while we're at it
+        if (current_symbol->type == SYM_FUNC) {
+            current_symbol->mangle_index = current_mangle_index;
+            current_mangle_index += 1;
+        }
         current_sym_cont = current_sym_cont->next;
     }
     //repeat for every child scope, but start addresses at offset
