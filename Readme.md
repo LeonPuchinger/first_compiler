@@ -89,7 +89,7 @@ $ make run_tests
 
 - function names can currently only exist once, even in sibling scopes
 
-    this happens because functions are implemented through labels in the generated code, which are global. this can be solved by scrambling function names for all or for duplicate functions.
+    this happens because functions are implemented through labels in the generated code, which are global. this can be solved by mangling/scrambling function names for all or for duplicate functions.
 
     ```
     function x {

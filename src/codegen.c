@@ -308,10 +308,10 @@ void write_condition(AST_Node *condition, Symbol_Table *table, FILE *out_file, i
     }
     if (condition->rhs != NULL) {
         //'else case' exits
-        writelnf_ni(out_file, "else"); //TODO name scramble
+        writelnf_ni(out_file, "else"); //TODO name mangling
     }
     else {
-        writelnf_ni(out_file, "end"); //TODO name scramble
+        writelnf_ni(out_file, "end"); //TODO name mangling
     }
     writef(out_file, "\n");
 
@@ -326,17 +326,17 @@ void write_condition(AST_Node *condition, Symbol_Table *table, FILE *out_file, i
     write_statements(condition->lhs->children, table, out_file);
 
     if (condition->rhs != NULL) {
-        writelnf(out_file, "jmp end"); //TODO name scramble
+        writelnf(out_file, "jmp end"); //TODO name mangling
 
         symbol_table_walk_next(table);
         *scope_index += 1;
 
         writef(out_file, "\n");
-        writelnf(out_file, "else:\n"); //TODO name scramble
+        writelnf(out_file, "else:\n"); //TODO name mangling
         //write statements of 'false-case'
         write_statements(condition->rhs->children, table, out_file);
     }
-    writelnf(out_file, "end:\n"); //TODO name scramble
+    writelnf(out_file, "end:\n"); //TODO name mangling
 
     symbol_table_pop(table);
 }
@@ -372,9 +372,6 @@ int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) 
             printf("ERROR: AST_Node is not a statement\n");
             return 1;
         }
-
-        //TODO "default" -> error: not a statement (assignment call function)
-
         current_statement = current_statement->next;
     }
 
