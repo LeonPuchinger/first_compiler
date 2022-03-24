@@ -14,6 +14,8 @@
 
 //amount of bytes on the stack in addition to vars (e.g. return addrs) in bytes
 static int current_stack_addr_offset = 0;
+//every symbol that is represented by a label in the gererated code gets this index appended to make it unique
+static int current_mangle_index = 0;
 
 //varargs style version of writef
 void vwritef(FILE *file, int indent_enabled, char *fmt, va_list fmt_args) {
@@ -308,10 +310,10 @@ void write_condition(AST_Node *condition, Symbol_Table *table, FILE *out_file, i
     }
     if (condition->rhs != NULL) {
         //'else case' exits
-        writelnf_ni(out_file, "else"); //TODO name mangling
+        writelnf_ni(out_file, "else_%d", current_mangle_index);
     }
     else {
-        writelnf_ni(out_file, "end"); //TODO name mangling
+        writelnf_ni(out_file, "end_%d", current_mangle_index);
     }
     writef(out_file, "\n");
 
@@ -326,19 +328,21 @@ void write_condition(AST_Node *condition, Symbol_Table *table, FILE *out_file, i
     write_statements(condition->lhs->children, table, out_file);
 
     if (condition->rhs != NULL) {
-        writelnf(out_file, "jmp end"); //TODO name mangling
+        writelnf(out_file, "jmp end_%d", current_mangle_index);
 
         symbol_table_walk_next(table);
         *scope_index += 1;
 
         writef(out_file, "\n");
-        writelnf(out_file, "else:\n"); //TODO name mangling
+        writelnf(out_file, "else_%d:\n", current_mangle_index);
         //write statements of 'false-case'
         write_statements(condition->rhs->children, table, out_file);
     }
-    writelnf(out_file, "end:\n"); //TODO name mangling
+    writelnf(out_file, "end_%d:\n", current_mangle_index);
 
     symbol_table_pop(table);
+
+    current_mangle_index += 1;
 }
 
 int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) {
