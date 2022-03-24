@@ -6,6 +6,12 @@ my first attempt at building a compiler from scratch. compiles a simple language
 //language looks something like this
 x1 = 1 + 2
 function abc {
+    if (x1 == 3) {
+        x1 = x1 + 1
+    } else {
+        x1 = x1 + 2
+    }
+
     x2 = x1 + 1
     x3 = x1 + x2
 }
@@ -39,10 +45,10 @@ $ make run_tests
 
 ## Todo
 
-- conditions
-- a way to print values
-- a few optimizations in the generated code
-- better error handling
+- [x] conditions
+- [ ] a way to print values
+- [ ] a few optimizations in the generated code
+- [ ] better error handling
 
 ## limitations
 
@@ -54,7 +60,7 @@ $ make run_tests
     ```
     param = 0
     function abc {
-        //...
+        //use param as if it were a function parameter...
     }
 
     param = 1
@@ -63,9 +69,9 @@ $ make run_tests
     abc()
     ```
 
-- no control structures like loops/conditions/...
+- no control structures other than conditions (like loops, ...)
 
-    workaround for loops using conditions (once they are available) & functions:
+    workaround for loops using conditions & functions:
 
     ```
     counter = 10
@@ -99,6 +105,8 @@ $ make run_tests
         }
     }
     ```
+
+    the same is currently true for conditions: only one condition statement can be used in the whole program until name mangling/scrambling for labels is implemented
 
 ## additional notes
 
