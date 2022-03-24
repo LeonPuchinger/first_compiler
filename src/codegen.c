@@ -268,9 +268,82 @@ void write_function_call(AST_Node *function_call, FILE *out_file) {
     writelnf(out_file, "call %s\n", function_call->token->value);
 }
 
+void write_boolean(AST_Node *boolean, Symbol_Table *table, FILE *out_file) {
+    AST_Node *lhs = boolean->lhs;
+    AST_Node *rhs = boolean->rhs;
+    if (lhs->node_type == ND_INT && rhs->node_type == ND_INT) {
+        char *constant1 = lhs->token->value;
+        writelnf(out_file, "mov rax, %s", constant1);
+        char *constant2 = rhs->token->value;
+        writelnf(out_file, "mov rbx, %s", constant2);
+        writelnf(out_file, "cmp rax, rbx");
+    }
+    else if (lhs->node_type == ND_VAR && rhs->node_type == ND_INT) {
+        char *constant = rhs->token->value;
+        writelnf(out_file, "mov rax, %s", constant);
+        int addr = symbol_table_get(table, lhs->token)->addr;
+        writelnf(out_file, "cmp [rbp - %d], rax", addr);
+    }
+    else if (lhs->node_type == ND_INT && rhs->node_type == ND_VAR) {
+        char *constant = lhs->token->value;
+        writelnf(out_file, "mov rax, %s", constant);
+        int addr = symbol_table_get(table, rhs->token)->addr;
+        writelnf(out_file, "cmp [rbp - %d], rax", addr);
+    }
+    else {
+        int addr1 = symbol_table_get(table, lhs->token)->addr;
+        int addr2 = symbol_table_get(table, rhs->token)->addr;
+        writelnf(out_file, "mov rax, [rbp - %d]", addr1);
+        writelnf(out_file, "cmp rax, [rbp - %d]", addr2);
+    }
+}
+
+void write_condition(AST_Node *condition, Symbol_Table *table, FILE *out_file, int *scope_index) {
+    write_boolean(condition->ms, table, out_file);
+    if (condition->ms->token->type == TK_EQU) {
+        writef(out_file, "jne ");
+    }
+    else {
+        writef(out_file, "je ");
+    }
+    if (condition->rhs != NULL) {
+        //'else case' exits
+        writelnf_ni(out_file, "else"); //TODO name mangling
+    }
+    else {
+        writelnf_ni(out_file, "end"); //TODO name mangling
+    }
+    writef(out_file, "\n");
+
+    //set correct scope
+    symbol_table_walk_child(table);
+    for (int i = 0; i < *scope_index; i++) {
+        symbol_table_walk_next(table);
+    }
+    *scope_index += 1;
+
+    //write statements of 'true-case'
+    write_statements(condition->lhs->children, table, out_file);
+
+    if (condition->rhs != NULL) {
+        writelnf(out_file, "jmp end"); //TODO name mangling
+
+        symbol_table_walk_next(table);
+        *scope_index += 1;
+
+        writef(out_file, "\n");
+        writelnf(out_file, "else:\n"); //TODO name mangling
+        //write statements of 'false-case'
+        write_statements(condition->rhs->children, table, out_file);
+    }
+    writelnf(out_file, "end:\n"); //TODO name mangling
+
+    symbol_table_pop(table);
+}
+
 int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) {
-    //used to keep track of which symbol table child scope is needed when writing function def
-    int function_def_index = 0;
+    //used to keep track of which symbol table child scope is needed when writing function defs or conditions
+    int scope_index = 0;
     AST_Node *current_statement = statements;
     while (current_statement != NULL) {
         if (current_statement->node_type == ND_ASSIGN) {
@@ -279,24 +352,26 @@ int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) 
         }
         else if (current_statement->node_type == ND_FUNCTION_DEF) {
             symbol_table_walk_child(table);
-            for (int i = 0; i < function_def_index; i++) {
+            for (int i = 0; i < scope_index; i++) {
                 symbol_table_walk_next(table);
             }
             int err = write_function_def(current_statement, table);
             if (err) return 1;
             symbol_table_pop(table);
-            function_def_index += 1;
+            scope_index += 1;
         }
         else if (current_statement->node_type == ND_FUNCTION_CALL) {
             write_function_call(current_statement, out_file);
+        }
+        else if (current_statement->node_type == ND_COND) {
+            //need to pass scope_index into the function, because the child scope needs to be set after the boolean is analyzed
+            //and the scope needs to change one additional time if the condition has an 'else case'
+            write_condition(current_statement, table, out_file, &scope_index);
         }
         else {
             printf("ERROR: AST_Node is not a statement\n");
             return 1;
         }
-
-        //TODO "default" -> error: not a statement (assignment call function)
-
         current_statement = current_statement->next;
     }
 

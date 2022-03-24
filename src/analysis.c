@@ -32,6 +32,27 @@ int check_symbols(AST_Node *statement, Symbol_Table *table) {
                 return 1;
             }
         }
+        else if (statement->node_type == ND_BOOLEAN) {
+            err = check_symbols(statement->lhs, table);
+            if (err) return err;
+            err = check_symbols(statement->rhs, table);
+            if (err) return err;
+        }
+        else if (statement->node_type == ND_COND) {
+            //check condition bool
+            err = check_symbols(statement->ms, table);
+            if (err) return err;
+            //check 'true case' contents
+            symbol_table_push(table);
+            err = check_symbols(statement->lhs->children, table);
+            if (err) return err;
+            symbol_table_pop(table);
+            //check 'false case' contents
+            symbol_table_push(table);
+            err = check_symbols(statement->rhs->children, table);
+            if (err) return err;
+            symbol_table_pop(table);
+        }
         else if (statement->node_type == ND_ASSIGN) {
             //rhs of assign needs to be check first
             //this way, a variable can't be assigned to itself during its initial assignment
