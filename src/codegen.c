@@ -301,10 +301,17 @@ void write_boolean(AST_Node *boolean, Symbol_Table *table, FILE *out_file) {
 void write_condition(AST_Node *condition, Symbol_Table *table, FILE *out_file, int *scope_index) {
     write_boolean(condition->ms, table, out_file);
     if (condition->ms->token->type == TK_EQU) {
-        writelnf(out_file, "jne else"); //TODO name scramble
+        writef(out_file, "jne ");
     }
     else {
-        writelnf(out_file, "je else"); //TODO name scramble
+        writef(out_file, "je ");
+    }
+    if (condition->rhs != NULL) {
+        //'else case' exits
+        writelnf_ni(out_file, "else"); //TODO name scramble
+    }
+    else {
+        writelnf_ni(out_file, "end"); //TODO name scramble
     }
     writef(out_file, "\n");
 
@@ -317,9 +324,10 @@ void write_condition(AST_Node *condition, Symbol_Table *table, FILE *out_file, i
 
     //write statements of 'true-case'
     write_statements(condition->lhs->children, table, out_file);
-    writelnf(out_file, "jmp end"); //TODO name scramble
 
     if (condition->rhs != NULL) {
+        writelnf(out_file, "jmp end"); //TODO name scramble
+
         symbol_table_walk_next(table);
         *scope_index += 1;
 
@@ -327,8 +335,8 @@ void write_condition(AST_Node *condition, Symbol_Table *table, FILE *out_file, i
         writelnf(out_file, "else:\n"); //TODO name scramble
         //write statements of 'false-case'
         write_statements(condition->rhs->children, table, out_file);
-        writelnf(out_file, "end:\n"); //TODO name scramble
     }
+    writelnf(out_file, "end:\n"); //TODO name scramble
 
     symbol_table_pop(table);
 }
