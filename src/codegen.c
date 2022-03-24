@@ -253,7 +253,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
 int write_function_def(AST_Node *function_def, Symbol_Table *table) {
     FILE *out_file = fopen(comb_str(comb_str(FUNC_BUFFERS_PATH, "/"), function_def->token->value), "w+");
 
-    writelnf_ni(out_file, "%s:", function_def->token->value);
+    writelnf_ni(out_file, "%s_%d:", function_def->token->value, symbol_table_get(table, function_def->token)->mangle_index);
     current_stack_addr_offset += 1;
     if (function_def->children == NULL) {
         writelnf(out_file, "nop");
@@ -271,8 +271,8 @@ int write_function_def(AST_Node *function_def, Symbol_Table *table) {
     return 0;
 }
 
-void write_function_call(AST_Node *function_call, FILE *out_file) {
-    writelnf(out_file, "call %s\n", function_call->token->value);
+void write_function_call(AST_Node *function_call, Symbol_Table *table, FILE *out_file) {
+    writelnf(out_file, "call %s_%d\n", function_call->token->value, symbol_table_get(table, function_call->token)->mangle_index);
 }
 
 void write_boolean(AST_Node *boolean, Symbol_Table *table, FILE *out_file) {
@@ -370,7 +370,7 @@ int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) 
             scope_index += 1;
         }
         else if (current_statement->node_type == ND_FUNCTION_CALL) {
-            write_function_call(current_statement, out_file);
+            write_function_call(current_statement, table, out_file);
         }
         else if (current_statement->node_type == ND_COND) {
             //need to pass scope_index into the function, because the child scope needs to be set after the boolean is analyzed
