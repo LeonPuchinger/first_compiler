@@ -103,6 +103,7 @@ Symbol *new_symbol(Symbol_Type type, Token *name) {
     new->name = name;
     new->addr = 0;
     new->initialized = 0;
+    new->mangle_index = 0;
     return new;
 }
 

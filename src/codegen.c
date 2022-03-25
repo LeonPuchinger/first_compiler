@@ -14,6 +14,8 @@
 
 //amount of bytes on the stack in addition to vars (e.g. return addrs) in bytes
 static int current_stack_addr_offset = 0;
+//every symbol that is represented by a label in the gererated code gets this index appended to make it unique
+static int current_mangle_index = 0;
 
 //varargs style version of writef
 void vwritef(FILE *file, int indent_enabled, char *fmt, va_list fmt_args) {
@@ -91,6 +93,11 @@ void _assign_addrs(Scope *scope, int addr_offset) {
         //assign memory address to functions (to store stack pointer at the beginning of the function)
         current_symbol->addr = addr_offset;
         addr_offset += 1;
+        //also set mangle index for function symbols while we're at it
+        if (current_symbol->type == SYM_FUNC) {
+            current_symbol->mangle_index = current_mangle_index;
+            current_mangle_index += 1;
+        }
         current_sym_cont = current_sym_cont->next;
     }
     //repeat for every child scope, but start addresses at offset
@@ -246,7 +253,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
 int write_function_def(AST_Node *function_def, Symbol_Table *table) {
     FILE *out_file = fopen(comb_str(comb_str(FUNC_BUFFERS_PATH, "/"), function_def->token->value), "w+");
 
-    writelnf_ni(out_file, "%s:", function_def->token->value);
+    writelnf_ni(out_file, "%s_%d:", function_def->token->value, symbol_table_get(table, function_def->token)->mangle_index);
     current_stack_addr_offset += 1;
     if (function_def->children == NULL) {
         writelnf(out_file, "nop");
@@ -264,8 +271,8 @@ int write_function_def(AST_Node *function_def, Symbol_Table *table) {
     return 0;
 }
 
-void write_function_call(AST_Node *function_call, FILE *out_file) {
-    writelnf(out_file, "call %s\n", function_call->token->value);
+void write_function_call(AST_Node *function_call, Symbol_Table *table, FILE *out_file) {
+    writelnf(out_file, "call %s_%d\n", function_call->token->value, symbol_table_get(table, function_call->token)->mangle_index);
 }
 
 void write_boolean(AST_Node *boolean, Symbol_Table *table, FILE *out_file) {
@@ -308,10 +315,10 @@ void write_condition(AST_Node *condition, Symbol_Table *table, FILE *out_file, i
     }
     if (condition->rhs != NULL) {
         //'else case' exits
-        writelnf_ni(out_file, "else"); //TODO name mangling
+        writelnf_ni(out_file, "else_%d", current_mangle_index);
     }
     else {
-        writelnf_ni(out_file, "end"); //TODO name mangling
+        writelnf_ni(out_file, "end_%d", current_mangle_index);
     }
     writef(out_file, "\n");
 
@@ -326,19 +333,21 @@ void write_condition(AST_Node *condition, Symbol_Table *table, FILE *out_file, i
     write_statements(condition->lhs->children, table, out_file);
 
     if (condition->rhs != NULL) {
-        writelnf(out_file, "jmp end"); //TODO name mangling
+        writelnf(out_file, "jmp end_%d", current_mangle_index);
 
         symbol_table_walk_next(table);
         *scope_index += 1;
 
         writef(out_file, "\n");
-        writelnf(out_file, "else:\n"); //TODO name mangling
+        writelnf(out_file, "else_%d:\n", current_mangle_index);
         //write statements of 'false-case'
         write_statements(condition->rhs->children, table, out_file);
     }
-    writelnf(out_file, "end:\n"); //TODO name mangling
+    writelnf(out_file, "end_%d:\n", current_mangle_index);
 
     symbol_table_pop(table);
+
+    current_mangle_index += 1;
 }
 
 int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) {
@@ -361,7 +370,7 @@ int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file) 
             scope_index += 1;
         }
         else if (current_statement->node_type == ND_FUNCTION_CALL) {
-            write_function_call(current_statement, out_file);
+            write_function_call(current_statement, table, out_file);
         }
         else if (current_statement->node_type == ND_COND) {
             //need to pass scope_index into the function, because the child scope needs to be set after the boolean is analyzed

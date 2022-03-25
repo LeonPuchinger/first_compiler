@@ -58,6 +58,7 @@ typedef struct Symbol {
     Token *name;
     int addr;
     char initialized;
+    int mangle_index;
 } Symbol;
 
 //TODO no need to have 'public' headers
