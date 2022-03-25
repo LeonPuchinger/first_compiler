@@ -288,18 +288,18 @@ void write_boolean(AST_Node *boolean, Symbol_Table *table, FILE *out_file) {
     else if (lhs->node_type == ND_VAR && rhs->node_type == ND_INT) {
         char *constant = rhs->token->value;
         writelnf(out_file, "mov rax, %s", constant);
-        int addr = symbol_table_get(table, lhs->token)->addr;
+        int addr = stack_addr(symbol_table_get(table, lhs->token)->addr);
         writelnf(out_file, "cmp [rbp - %d], rax", addr);
     }
     else if (lhs->node_type == ND_INT && rhs->node_type == ND_VAR) {
         char *constant = lhs->token->value;
         writelnf(out_file, "mov rax, %s", constant);
-        int addr = symbol_table_get(table, rhs->token)->addr;
+        int addr = stack_addr(symbol_table_get(table, rhs->token)->addr);
         writelnf(out_file, "cmp [rbp - %d], rax", addr);
     }
     else {
-        int addr1 = symbol_table_get(table, lhs->token)->addr;
-        int addr2 = symbol_table_get(table, rhs->token)->addr;
+        int addr1 = stack_addr(symbol_table_get(table, lhs->token)->addr);
+        int addr2 = stack_addr(symbol_table_get(table, rhs->token)->addr);
         writelnf(out_file, "mov rax, [rbp - %d]", addr1);
         writelnf(out_file, "cmp rax, [rbp - %d]", addr2);
     }
