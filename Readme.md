@@ -87,26 +87,9 @@ $ make run_tests
 
 ## known issues
 
-- function names can currently only exist once, even in sibling scopes
-
-    this happens because functions are implemented through labels in the generated code, which are global. this can be solved by mangling/scrambling function names for all or for duplicate functions.
-
-    ```
-    function x {
-        function a {
-            //...
-        }
-    }
-
-    function y {
-        //will fail
-        function a {
-            //...
-        }
-    }
-    ```
-
-    the same is currently true for conditions: only one condition statement can be used in the whole program until name mangling/scrambling for labels is implemented
+- the parser has less than ideal error handling: the compiler can exit 0, even though the parser could not find/match a suitable production
+- stack addresses are currently calculated in the wrong way when they are accessed from within a child scope
+- conditions still have problems if they are missing the else clause. workaround: write additional empty else clause
 
 ## additional notes
 
