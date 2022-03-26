@@ -97,7 +97,8 @@ void _assign_addrs(Scope *scope, int addr_offset) {
             //also set mangle index for function symbols while we're at it
             current_symbol->mangle_index = current_mangle_index;
             current_mangle_index += 1;
-        } else {
+        }
+        else {
             current_symbol->addr = addr_offset;
             addr_offset += 1;
         }
@@ -263,6 +264,7 @@ int write_function_def(AST_Node *function_def, Symbol_Table *table) {
     }
     else {
         writelnf(out_file, "push rsp");
+        writelnf(out_file, "%s_%d_inner:", function_def->token->value, symbol_table_get(table, function_def->token)->mangle_index);
         int err = write_statements(function_def->children, table, out_file);
         if (err) return 1;
         int addr = stack_addr(symbol_table_get(table, function_def->token));
@@ -275,7 +277,12 @@ int write_function_def(AST_Node *function_def, Symbol_Table *table) {
 }
 
 void write_function_call(AST_Node *function_call, Symbol_Table *table, FILE *out_file) {
-    writelnf(out_file, "call %s_%d\n", function_call->token->value, symbol_table_get(table, function_call->token)->mangle_index);
+    if (symbol_table_is_local(table, function_call->token)) {
+        writelnf(out_file, "call %s_%d\n", function_call->token->value, symbol_table_get(table, function_call->token)->mangle_index);
+    }
+    else {
+        writelnf(out_file, "jmp %s_%d_inner\n", function_call->token->value, symbol_table_get(table, function_call->token)->mangle_index);
+    }
 }
 
 void write_boolean(AST_Node *boolean, Symbol_Table *table, FILE *out_file) {
