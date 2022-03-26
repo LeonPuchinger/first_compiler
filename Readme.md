@@ -88,7 +88,7 @@ $ make run_tests
 ## known issues
 
 - the parser has less than ideal error handling: the compiler can exit 0, even though the parser could not find/match a suitable production
-- conditions still have problems if they are missing the else clause. workaround: write additional empty else clause
+- there is no way to print values yet
 
 ## additional notes
 

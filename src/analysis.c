@@ -48,10 +48,12 @@ int check_symbols(AST_Node *statement, Symbol_Table *table) {
             if (err) return err;
             symbol_table_pop(table);
             //check 'false case' contents
-            symbol_table_push(table);
-            err = check_symbols(statement->rhs->children, table);
-            if (err) return err;
-            symbol_table_pop(table);
+            if (statement->rhs != NULL) {
+                symbol_table_push(table);
+                err = check_symbols(statement->rhs->children, table);
+                if (err) return err;
+                symbol_table_pop(table);
+            }
         }
         else if (statement->node_type == ND_ASSIGN) {
             //rhs of assign needs to be check first
