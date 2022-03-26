@@ -78,9 +78,9 @@ $ make run_tests
     function loop {
         if (counter != 0) {
             counter = counter - 1
+            loop()
         }
         //do loop stuff with counter...
-        loop()
     }
     loop()
     ```
