@@ -90,13 +90,16 @@ void _assign_addrs(Scope *scope, int addr_offset) {
     while (current_sym_cont != NULL) {
         Symbol *current_symbol = current_sym_cont->item;
         //assign memory address to actual vars, but also
-        //assign memory address to functions (to store stack pointer at the beginning of the function)
-        current_symbol->addr = addr_offset;
-        addr_offset += 1;
-        //also set mangle index for function symbols while we're at it
+        //assign two memory addresses to functions (to store stack pointer & return address at the beginning of the function)
         if (current_symbol->type == SYM_FUNC) {
+            current_symbol->addr = addr_offset + 1;
+            addr_offset += 2;
+            //also set mangle index for function symbols while we're at it
             current_symbol->mangle_index = current_mangle_index;
             current_mangle_index += 1;
+        } else {
+            current_symbol->addr = addr_offset;
+            addr_offset += 1;
         }
         current_sym_cont = current_sym_cont->next;
     }
@@ -114,9 +117,9 @@ void assign_addrs(Symbol_Table *table) {
 }
 
 //converts "virtual" symbol-table addr to stack addr, relative to rbp
-//relative to rbp means the addr is n bytes lower than rbp
-int stack_addr(int virtual_addr) {
-    return (current_stack_addr_offset + 1 + virtual_addr) * REGISTER_SIZE;
+//(relative to rbp means the addr is n bytes lower than rbp)
+int stack_addr(Symbol *symbol) {
+    return (symbol->addr + 1) * REGISTER_SIZE;
 }
 
 int write_statements(AST_Node *statements, Symbol_Table *table, FILE *out_file);
@@ -136,7 +139,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             writef(out_file, "mov rax, ");
             if (expr->lhs->node_type == ND_VAR) {
                 //init = var +/- ...
-                int addr = stack_addr(symbol_table_get(table, expr->lhs->token)->addr);
+                int addr = stack_addr(symbol_table_get(table, expr->lhs->token));
                 writelnf_ni(out_file, "[rbp - %d]", addr);
             }
             else {
@@ -153,7 +156,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             }
             if (expr->rhs->node_type == ND_VAR) {
                 //init = ... +/- var
-                int addr = stack_addr(symbol_table_get(table, expr->rhs->token)->addr);
+                int addr = stack_addr(symbol_table_get(table, expr->rhs->token));
                 writelnf_ni(out_file, "[rbp - %d]", addr);
             }
             else {
@@ -168,7 +171,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             writef(out_file, "push ");
             if (expr->node_type == ND_VAR) {
                 //init = var
-                int addr = stack_addr(symbol_table_get(table, expr->token)->addr);
+                int addr = stack_addr(symbol_table_get(table, expr->token));
                 writelnf_ni(out_file, "[rbp - %d]", addr);
             }
             else {
@@ -179,7 +182,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
         }
     }
     else {
-        int assignee_addr = stack_addr(symbol_table_get(table, assignee->token)->addr);
+        int assignee_addr = stack_addr(symbol_table_get(table, assignee->token));
         if (is_composite) {
             //exist = a +/- b
             if (expr->lhs->node_type == ND_INT && expr->rhs->node_type == ND_INT) {
@@ -201,7 +204,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
                 writef(out_file, "mov rax, ");
                 if (expr->lhs->node_type == ND_VAR) {
                     //exist = var +/- ...
-                    int addr = stack_addr(symbol_table_get(table, expr->lhs->token)->addr);
+                    int addr = stack_addr(symbol_table_get(table, expr->lhs->token));
                     writelnf_ni(out_file, "[rbp - %d]", addr);
                 }
                 else {
@@ -219,7 +222,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
                 writef_ni(out_file, "rax, ");
                 if (expr->rhs->node_type == ND_VAR) {
                     //exist = ... +/- var
-                    int addr = stack_addr(symbol_table_get(table, expr->rhs->token)->addr);
+                    int addr = stack_addr(symbol_table_get(table, expr->rhs->token));
                     writelnf_ni(out_file, "[rbp - %d]", addr);
                 }
                 else {
@@ -235,7 +238,7 @@ int write_assign(AST_Node *assignment, Symbol_Table *table, FILE *out_file) {
             //exist = var/const
             if (expr->node_type == ND_VAR) {
                 //exist = var
-                int addr = stack_addr(symbol_table_get(table, expr->token)->addr);
+                int addr = stack_addr(symbol_table_get(table, expr->token));
                 writelnf(out_file, "mov rax, [rbp - %d]", addr);
                 writelnf(out_file, "mov [rbp - %d], rax", assignee_addr);
             }
@@ -262,7 +265,7 @@ int write_function_def(AST_Node *function_def, Symbol_Table *table) {
         writelnf(out_file, "push rsp");
         int err = write_statements(function_def->children, table, out_file);
         if (err) return 1;
-        int addr = stack_addr(symbol_table_get(table, function_def->token)->addr);
+        int addr = stack_addr(symbol_table_get(table, function_def->token));
         writelnf(out_file, "mov rsp, [rbp - %d]", addr);
     }
     writelnf(out_file, "ret\n");
@@ -288,18 +291,18 @@ void write_boolean(AST_Node *boolean, Symbol_Table *table, FILE *out_file) {
     else if (lhs->node_type == ND_VAR && rhs->node_type == ND_INT) {
         char *constant = rhs->token->value;
         writelnf(out_file, "mov rax, %s", constant);
-        int addr = stack_addr(symbol_table_get(table, lhs->token)->addr);
+        int addr = stack_addr(symbol_table_get(table, lhs->token));
         writelnf(out_file, "cmp [rbp - %d], rax", addr);
     }
     else if (lhs->node_type == ND_INT && rhs->node_type == ND_VAR) {
         char *constant = lhs->token->value;
         writelnf(out_file, "mov rax, %s", constant);
-        int addr = stack_addr(symbol_table_get(table, rhs->token)->addr);
+        int addr = stack_addr(symbol_table_get(table, rhs->token));
         writelnf(out_file, "cmp [rbp - %d], rax", addr);
     }
     else {
-        int addr1 = stack_addr(symbol_table_get(table, lhs->token)->addr);
-        int addr2 = stack_addr(symbol_table_get(table, rhs->token)->addr);
+        int addr1 = stack_addr(symbol_table_get(table, lhs->token));
+        int addr2 = stack_addr(symbol_table_get(table, rhs->token));
         writelnf(out_file, "mov rax, [rbp - %d]", addr1);
         writelnf(out_file, "cmp rax, [rbp - %d]", addr2);
     }
