@@ -14,7 +14,7 @@
 
 //amount of bytes on the stack in addition to vars (e.g. return addrs) in bytes
 static int current_stack_addr_offset = 0;
-//every symbol that is represented by a label in the gererated code gets this index appended to make it unique
+//every symbol that is represented by a label in the generated code gets this index appended to make it unique
 static int current_mangle_index = 0;
 
 //varargs style version of writef
